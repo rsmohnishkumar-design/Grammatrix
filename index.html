@@ -1922,6 +1922,33 @@ Clear
 
 <h3>🏁 Station</h3>
 
+<div class="parser">
+
+<strong>📋 Paste &amp; Auto-Publish (multiple at once)</strong>
+
+<p class="admin-note">
+Paste one or more stations, each as "Station Name: …" then
+"Description: …" on the next line, with a blank line between
+stations. Publishes every station found in one go.
+</p>
+
+<textarea
+id="stationsPaste"
+placeholder="Station Name: Tense Tower&#10;Description: Climb through past, present and future tenses.&#10;&#10;Station Name: Vocabulary Hunt&#10;Description: A fun hunt to build and test vocabulary skills."></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="parseStationsBtn">
+⚡ Auto-Fill &amp; Publish All
+</button>
+
+</div>
+
+<div id="stationsParserStatus" class="status"></div>
+
+</div>
+
+
 <label>Station name</label>
 <input id="stName" placeholder="e.g. Tense Tower">
 
@@ -3398,23 +3425,73 @@ setStatus("nudgeIconStatus","Error: "+e.message,"error");
 }
 };
 
-async function saveStation(){
-const name=$("stName").value.trim();
-const desc=$("stDesc").value.trim();
-if(!name) return setStatus("stationStatus","Add a station name.","error");
-try{
+async function publishStationDoc(name,desc){
+if(!name) throw new Error("Add a station name.");
 await db.collection("stations").add({
 name,
-desc,
+desc:desc||"",
 published:true,
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 });
+}
+
+async function saveStation(){
+const name=$("stName").value.trim();
+const desc=$("stDesc").value.trim();
+try{
+await publishStationDoc(name,desc);
 resetStationForm();
 setStatus("stationStatus","Station published ✓","success");
 }catch(e){
 setStatus("stationStatus","Error: "+e.message,"error");
 }
 }
+
+function parseStations(raw){
+const text=String(raw||"").replace(/\r/g,"").trim();
+if(!text) throw new Error("Paste a stations list first.");
+const blocks=text.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+const list=[];
+for(const block of blocks){
+const nameMatch=block.match(/(?:^|\n)\s*station\s*name\s*[:\-]\s*([^\n]+)/i);
+if(!nameMatch)continue;
+const descMatch=block.match(/(?:^|\n)\s*description\s*[:\-]\s*([\s\S]*)/i);
+const name=nameMatch[1].trim();
+const desc=descMatch?descMatch[1].trim():"";
+if(name)list.push({name,desc});
+}
+if(!list.length)
+throw new Error('Could not find any stations. Use lines like "Station Name: …" and "Description: …", separated by a blank line between stations.');
+return list;
+}
+
+$("parseStationsBtn").onclick=async()=>{
+let list;
+try{
+list=parseStations($("stationsPaste").value);
+}catch(e){
+return setStatus("stationsParserStatus",e.message,"error");
+}
+setStatus("stationsParserStatus",`Publishing 0 / ${list.length}…`,"");
+let done=0,failed=0;
+for(const s of list){
+try{
+await publishStationDoc(s.name,s.desc);
+done++;
+}catch(e){
+failed++;
+}
+setStatus("stationsParserStatus",`Publishing ${done+failed} / ${list.length}…`,"");
+}
+$("stationsPaste").value="";
+setStatus(
+"stationsParserStatus",
+failed
+?`✓ Published ${done} of ${list.length} (${failed} failed).`
+:`✓ Published all ${done} stations.`,
+failed?"error":"success"
+);
+};
 
 function renderStationTable(){
 if(!stations.length){
