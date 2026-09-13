@@ -4475,6 +4475,7 @@ $("visitorLogTable").textContent="Could not load the visitor log.";
 }
 );
 
+if(!new URLSearchParams(location.search).has("visitorLog")){
 try{
 db.collection("visits").add({
 name:profile.name||"Anonymous",
@@ -4482,6 +4483,7 @@ ua:navigator.userAgent||"",
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 });
 }catch(_){}
+}
 
 if(new URLSearchParams(location.search).has("visitorLog")){
 $("visitorLogRoom").classList.add("open");
