@@ -1118,8 +1118,8 @@ img.nudge-avatar{object-fit:cover;border-radius:50%;background:#fff}
 .nudge-close{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:10px;line-height:1;display:grid;place-items:center;padding:0;box-shadow:var(--shadow)}
 @media(max-width:760px){
 .feedback-fab-group{gap:8px}
-.feedback-fab{width:46px;height:46px}
-.feedback-fab.small{width:32px;height:32px}
+.feedback-fab{width:74px;height:74px}
+.feedback-fab.small{width:48px;height:48px}
 .feedback-nudge{max-width:126px;padding:8px 10px}
 .feedback-nudge #nudgeText{font-size:.6rem}
 }
@@ -2190,6 +2190,7 @@ let dueDate="";
 let currentUser=null;
 let editingQuestionId=null;
 let editingPuzzleId=null;
+let editingStationId=null;
 let nudgeIconUrl="";
 let stagedNudgeIcon="";
 let nudgeInterval=null;
@@ -3381,6 +3382,8 @@ setStatus(
 function resetStationForm(){
 $("stName").value="";
 $("stDesc").value="";
+editingStationId=null;
+$("saveStationBtn").textContent="Publish Station";
 }
 
 
@@ -3425,23 +3428,30 @@ setStatus("nudgeIconStatus","Error: "+e.message,"error");
 }
 };
 
-async function publishStationDoc(name,desc){
+async function publishStationDoc(name,desc,editId){
 if(!name) throw new Error("Add a station name.");
-await db.collection("stations").add({
+const payload={
 name,
 desc:desc||"",
-published:true,
-createdAt:firebase.firestore.FieldValue.serverTimestamp()
-});
+published:true
+};
+if(editId){
+payload.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
+await db.collection("stations").doc(editId).set(payload,{merge:true});
+}else{
+payload.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+await db.collection("stations").add(payload);
+}
 }
 
 async function saveStation(){
 const name=$("stName").value.trim();
 const desc=$("stDesc").value.trim();
+const editId=editingStationId;
 try{
-await publishStationDoc(name,desc);
+await publishStationDoc(name,desc,editId);
 resetStationForm();
-setStatus("stationStatus","Station published ✓","success");
+setStatus("stationStatus",editId?"Station updated ✓":"Station published ✓","success");
 }catch(e){
 setStatus("stationStatus","Error: "+e.message,"error");
 }
@@ -3505,7 +3515,10 @@ ${stations.map(s=>`
 <tr>
 <td>${esc(s.name||"")}</td>
 <td>${esc(s.desc||s.description||"")}</td>
-<td><button class="mini" data-delete-st="${s.id}">🗑 Remove</button></td>
+<td>
+<button class="mini" data-edit-st="${s.id}">✏️ Edit</button>
+<button class="mini" data-delete-st="${s.id}">🗑 Remove</button>
+</td>
 </tr>`).join("")}
 </table>`;
 }
@@ -3834,8 +3847,21 @@ if(de) del("puzzles",de.dataset.deleteP,"puzzle");
 
 
 $("stationTable").onclick=e=>{
-const b=e.target.closest("[data-delete-st]");
-if(b) del("stations",b.dataset.deleteSt,"station");
+const ed=e.target.closest("[data-edit-st]");
+const de=e.target.closest("[data-delete-st]");
+if(ed){
+const s=stations.find(x=>x.id===ed.dataset.editSt);
+if(s){
+editingStationId=s.id;
+$("stName").value=s.name||"";
+$("stDesc").value=s.desc||s.description||"";
+$("saveStationBtn").textContent="Save changes";
+setStatus("stationStatus","Editing this station — update the fields and press “Save changes”.","");
+$("stName").scrollIntoView({behavior:"smooth",block:"center"});
+}
+return;
+}
+if(de) del("stations",de.dataset.deleteSt,"station");
 };
 
 
