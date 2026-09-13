@@ -99,14 +99,29 @@ pointer-events:none
 width:390px;
 height:390px;
 right:-145px;
-top:-175px
+top:-175px;
+animation:heroRingPulse 7s ease-in-out infinite
 }
 
 .hero:after{
 width:260px;
 height:260px;
 left:-150px;
-bottom:-180px
+bottom:-180px;
+animation:heroRingPulse 7s ease-in-out infinite 1.2s
+}
+
+@keyframes heroRingPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.55}}
+
+.hero-blob{position:absolute;border-radius:50%;filter:blur(1px);pointer-events:none;z-index:1}
+.hero-blob.b1{width:130px;height:130px;background:radial-gradient(circle,rgba(151,133,255,.55),transparent 70%);top:55px;left:9%;animation:heroDrift1 9s ease-in-out infinite}
+.hero-blob.b2{width:95px;height:95px;background:radial-gradient(circle,rgba(63,210,224,.4),transparent 70%);bottom:36px;right:13%;animation:heroDrift2 11s ease-in-out infinite}
+.hero-blob.b3{width:55px;height:55px;background:radial-gradient(circle,rgba(255,215,110,.4),transparent 70%);top:110px;right:28%;animation:heroDrift1 7.5s ease-in-out infinite reverse}
+@keyframes heroDrift1{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,-16px)}}
+@keyframes heroDrift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-16px,14px)}}
+
+@media(prefers-reduced-motion:reduce){
+.hero:before,.hero:after,.hero-blob{animation:none}
 }
 
 .topbar,
@@ -1005,6 +1020,14 @@ color:var(--muted);
 font-size:.82rem
 }
 
+.made-by{
+margin-top:10px;
+font-size:.72rem;
+color:var(--muted);
+opacity:.75;
+letter-spacing:.02em
+}
+
 @media(max-width:760px){
 
 .nav-grid,
@@ -1062,8 +1085,8 @@ margin-right:0
 .backbtn{margin-bottom:14px}
 .station-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .station{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
-.station h3{font-family:Manrope,sans-serif;font-size:1.05rem;margin-bottom:6px}
-.station p{color:#52617c;font-size:.88rem;white-space:pre-wrap}
+.station h3{font-family:Manrope,sans-serif;font-size:1.1rem;margin-bottom:8px}
+.station p{color:#3d4a63;font-size:.95rem;line-height:1.6;white-space:pre-wrap}
 .option.selected{border-color:var(--primary);background:var(--soft);box-shadow:0 0 0 2px rgba(90,79,242,.18)}
 .puzzle-input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#fbfcff;color:var(--ink);font-size:1rem;margin-bottom:4px}
 .review-list{display:grid;gap:10px;margin:6px 0 16px;text-align:left}
@@ -1088,6 +1111,7 @@ margin-right:0
 .feedback-nudge{position:relative;max-width:170px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:9px 12px;box-shadow:var(--shadow);text-align:left;color:var(--primary);cursor:pointer}
 .feedback-nudge:after{content:"";position:absolute;right:-7px;top:50%;transform:translateY(-50%);border:7px solid transparent;border-left-color:#fff}
 .nudge-avatar{display:block;width:100%;height:100%}
+.modal-icon-wrap{display:inline-block;width:28px;height:28px;vertical-align:middle;margin-right:8px;border-radius:50%;overflow:hidden;position:relative;top:-2px}
 img.nudge-avatar{object-fit:cover;border-radius:50%;background:#fff}
 .feedback-nudge #nudgeText{font-size:.68rem;line-height:1.3;font-weight:600;letter-spacing:.01em}
 .feedback-nudge.hidden{display:none}
@@ -1110,15 +1134,16 @@ img.nudge-avatar{object-fit:cover;border-radius:50%;background:#fff}
 .confetti-piece{position:absolute;top:-40px;font-size:1.4rem;pointer-events:none;animation:confettiFall linear forwards;z-index:1}
 @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(420px) rotate(360deg);opacity:.15}}
 
-.station.station-image{padding:0;overflow:hidden;text-align:left;cursor:pointer;background:#fff;display:block;width:100%}
-.station.station-image img{width:100%;height:150px;object-fit:cover;display:block}
-.station.station-image h3{padding:14px 16px;margin:0}
 </style>
 </head>
 
 <body>
 
 <header class="hero">
+
+<div class="hero-blob b1" aria-hidden="true"></div>
+<div class="hero-blob b2" aria-hidden="true"></div>
+<div class="hero-blob b3" aria-hidden="true"></div>
 
 <div class="topbar">
 
@@ -1282,6 +1307,8 @@ Understand grammar, practise language skills and learn from every answer.
 <br>
 The Mega Grammar Learning Fest
 
+<div class="made-by">Made by Mohnishkumar · 7A</div>
+
 </footer>
 
 
@@ -1427,7 +1454,23 @@ Continue
 
 <button class="close" id="closeFeedback">×</button>
 
-<h2>💬 Feedback</h2>
+<h2>
+<span class="modal-icon-wrap">
+<svg class="nudge-avatar" id="modalAvatarSvg" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+<circle cx="17" cy="17" r="17" fill="#eeecff"/>
+<path d="M4 34c0-7 5.5-11 13-11s13 4 13 11z" fill="#bfe0fb"/>
+<path d="M13.5 24c1 2 5 2 6 0" stroke="#6fa8d8" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<path d="M7.5 13.5c0-6.2 4.3-9.8 9.5-9.8s9.5 3.6 9.5 9.8c0 1-.2 1.9-.5 2.6-1.9-1.7-4.6-2.5-7-1.6-2.6 1-3.2 3.1-5.7 3.4-2.8.4-5-1.1-6.3-2.8-.3-.5-.5-1-.5-1.6z" fill="#2b2440"/>
+<circle cx="17" cy="16" r="7.6" fill="#ffd9b3"/>
+<path d="M12 10c3 .5 5 2.5 5.5 5-2-1-4.5-1-6-.2-.3-1.6-.2-3.3.5-4.8z" fill="#2b2440"/>
+<circle cx="14.3" cy="15.6" r="1" fill="#2b2b2b"/>
+<circle cx="19.7" cy="15.6" r="1" fill="#2b2b2b"/>
+<path d="M14 19c1 1.2 5 1.2 6 0" stroke="#7a4b2b" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>
+<img id="modalAvatarImg" class="nudge-avatar hidden" alt="">
+</span>
+Feedback
+</h2>
 
 <p class="lead">
 Tell the Grammatrix coordinators what you think.
@@ -1482,29 +1525,6 @@ Submit Feedback
 <h2 id="lbPopupTitle"></h2>
 
 <p class="lead" id="lbPopupMsg"></p>
-
-</div>
-
-</div>
-
-
-<!-- STATION DETAIL -->
-
-<div class="info-overlay" id="stationPopupOverlay">
-
-<div class="modal">
-
-<button class="close" id="closeStationPopup">×</button>
-
-<h2 id="stPopupTitle"></h2>
-
-<img
-id="stPopupImg"
-class="hidden"
-style="width:100%;border-radius:16px;margin:12px 0;object-fit:cover;max-height:320px"
-alt="">
-
-<p class="lead" id="stPopupDesc" style="white-space:pre-wrap"></p>
 
 </div>
 
@@ -1908,15 +1928,6 @@ Clear
 <label>Description</label>
 <textarea id="stDesc" placeholder="What happens at this station…"></textarea>
 
-<label>Station image (optional)</label>
-<input id="stImage" type="file" accept="image/*">
-
-<img
-id="stImagePreview"
-class="hidden"
-style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin:8px 0"
-alt="Preview">
-
 <div class="btn-row">
 
 <button class="btn primary" id="saveStationBtn">
@@ -2152,7 +2163,6 @@ let dueDate="";
 let currentUser=null;
 let editingQuestionId=null;
 let editingPuzzleId=null;
-let stationImageData="";
 let nudgeIconUrl="";
 let stagedNudgeIcon="";
 let nudgeInterval=null;
@@ -2524,47 +2534,12 @@ if(!stations.length){
 a.innerHTML='<div class="empty">No stations have been added yet. Check back soon.</div>';
 return;
 }
-a.innerHTML=stations.map(s=>{
-const img=s.image||"";
-if(img){
-return `
-<button class="station station-image" type="button" data-station-id="${s.id}">
-<img src="${esc(img)}" alt="">
-<h3>${esc(s.name||"Station")}</h3>
-</button>`;
-}
-return `
+a.innerHTML=stations.map(s=>`
 <article class="station">
 <h3>${esc(s.name||"Station")}</h3>
 <p>${esc(s.desc||s.description||"")}</p>
-</article>`;
-}).join("");
+</article>`).join("");
 }
-
-function openStationPopup(s){
-$("stPopupTitle").textContent=s.name||"Station";
-const img=s.image||"";
-if(img){
-$("stPopupImg").src=img;
-$("stPopupImg").classList.remove("hidden");
-}else{
-$("stPopupImg").classList.add("hidden");
-$("stPopupImg").src="";
-}
-$("stPopupDesc").textContent=s.desc||s.description||"";
-$("stationPopupOverlay").classList.add("open");
-}
-
-$("stationsArea").onclick=e=>{
-const b=e.target.closest("[data-station-id]");
-if(!b)return;
-const s=stations.find(x=>x.id===b.dataset.stationId);
-if(s) openStationPopup(s);
-};
-
-$("closeStationPopup").onclick=()=>{
-$("stationPopupOverlay").classList.remove("open");
-};
 
 
 /* ============ GRAMMAR CHALLENGE ============ */
@@ -3379,26 +3354,7 @@ setStatus(
 function resetStationForm(){
 $("stName").value="";
 $("stDesc").value="";
-$("stImage").value="";
-$("stImagePreview").classList.add("hidden");
-$("stImagePreview").src="";
-stationImageData="";
 }
-
-$("stImage").onchange=async e=>{
-try{
-const d=await imageData(e.target.files[0],900);
-stationImageData=d||"";
-if(d){
-$("stImagePreview").src=d;
-$("stImagePreview").classList.remove("hidden");
-}else{
-$("stImagePreview").classList.add("hidden");
-}
-}catch(err){
-setStatus("stationStatus",err.message,"error");
-}
-};
 
 
 $("nudgeIconInput").onchange=async e=>{
@@ -3450,7 +3406,6 @@ try{
 await db.collection("stations").add({
 name,
 desc,
-image:stationImageData||"",
 published:true,
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 });
@@ -4458,15 +4413,17 @@ e=>{}
 
 
 function renderNudgeIcon(){
+[["nudgeAvatarSvg","nudgeAvatarImg"],["modalAvatarSvg","modalAvatarImg"]].forEach(([svgId,imgId])=>{
 if(nudgeIconUrl){
-$("nudgeAvatarSvg").classList.add("hidden");
-$("nudgeAvatarImg").src=nudgeIconUrl;
-$("nudgeAvatarImg").classList.remove("hidden");
+$(svgId).classList.add("hidden");
+$(imgId).src=nudgeIconUrl;
+$(imgId).classList.remove("hidden");
 }else{
-$("nudgeAvatarImg").classList.add("hidden");
-$("nudgeAvatarImg").src="";
-$("nudgeAvatarSvg").classList.remove("hidden");
+$(imgId).classList.add("hidden");
+$(imgId).src="";
+$(svgId).classList.remove("hidden");
 }
+});
 }
 
 db.collection("meta")
