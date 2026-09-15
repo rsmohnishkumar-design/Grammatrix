@@ -86,6 +86,12 @@ radial-gradient(circle at 86% 35%,rgba(33,183,201,.18),transparent 28%),
 linear-gradient(135deg,#5548e8,#303d72 52%,#18243f)
 }
 
+.hero.has-bg{
+background:
+linear-gradient(180deg,rgba(18,14,48,.62),rgba(14,20,42,.8)),
+var(--hero-bg-img) center/cover no-repeat
+}
+
 .hero:before,
 .hero:after{
 content:"";
@@ -190,7 +196,7 @@ color:rgba(255,255,255,.72)
 
 h1{
 font-family:Manrope,sans-serif;
-font-size:clamp(3.4rem,9vw,6.5rem);
+font-size:clamp(3.7rem,10vw,7.2rem);
 line-height:.94;
 letter-spacing:-.065em;
 margin:13px 0 14px;
@@ -199,7 +205,7 @@ text-shadow:0 10px 35px rgba(0,0,0,.16)
 
 .subtitle{
 font-family:Manrope,sans-serif;
-font-size:clamp(1.05rem,2.5vw,1.45rem);
+font-size:clamp(1.2rem,3.2vw,1.7rem);
 font-weight:600;
 color:rgba(255,255,255,.94)
 }
@@ -1087,6 +1093,8 @@ margin-right:0
 .station{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
 .station h3{font-family:Manrope,sans-serif;font-size:1.1rem;margin-bottom:8px}
 .station p{color:#3d4a63;font-size:.95rem;line-height:1.6;white-space:pre-wrap}
+.big-card.locked{opacity:.55;filter:grayscale(.35)}
+.sheet input.mini-input,.sheet textarea.mini-input{width:100%;min-width:140px;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;resize:vertical;white-space:normal}
 .option.selected{border-color:var(--primary);background:var(--soft);box-shadow:0 0 0 2px rgba(90,79,242,.18)}
 .puzzle-input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#fbfcff;color:var(--ink);font-size:1rem;margin-bottom:4px}
 .review-list{display:grid;gap:10px;margin:6px 0 16px;text-align:left}
@@ -1193,7 +1201,7 @@ Understand grammar, practise language skills and learn from every answer.
 <button class="big-card" id="goStations">
 <span class="bc-ic">🏁</span>
 <h3>Stations</h3>
-<p>Explore the stations the coordinators have set up.</p>
+<p id="stationsCardDesc">Explore the stations the coordinators have set up.</p>
 </button>
 
 <button class="big-card" id="goGameplay">
@@ -1215,6 +1223,10 @@ Understand grammar, practise language skills and learn from every answer.
 <div class="section-head">
 <h2>🏁 Stations</h2>
 <p>Visit each station to take part.</p>
+</div>
+
+<div id="stationsLockedNote" class="empty hidden">
+🔒 Stations open after the due date.
 </div>
 
 <div id="stationsArea" class="station-grid">
@@ -2010,6 +2022,51 @@ Reset to Default
 </div>
 
 
+<!-- HEADER BACKGROUND IMAGE -->
+
+<div class="admin-card">
+
+<h3>🖼 Header Background Image</h3>
+
+<p class="admin-note">
+Sets a photo behind the top “Grammatrix” banner on the home page —
+great for expo photos. Unlocks once the due date has passed.
+</p>
+
+<div id="headerBgLocked" class="status hidden">
+🔒 Unlocks after the due date (<span id="headerBgLockedDate">not announced yet</span>).
+</div>
+
+<div id="headerBgControls">
+
+<label>Background image</label>
+<input id="headerBgInput" type="file" accept="image/*">
+
+<img
+id="headerBgPreview"
+class="hidden"
+style="width:180px;height:100px;object-fit:cover;border-radius:14px;margin:8px 0"
+alt="Preview">
+
+<div class="btn-row">
+
+<button class="btn primary" id="saveHeaderBgBtn">
+Save Background
+</button>
+
+<button class="btn secondary" id="resetHeaderBgBtn">
+Remove Background
+</button>
+
+</div>
+
+<div id="headerBgStatus" class="status"></div>
+
+</div>
+
+</div>
+
+
 <!-- PUBLISHED TABLES -->
 
 <div class="admin-card">
@@ -2191,8 +2248,11 @@ let currentUser=null;
 let editingQuestionId=null;
 let editingPuzzleId=null;
 let editingStationId=null;
+let stationTableEditingId=null;
 let nudgeIconUrl="";
 let stagedNudgeIcon="";
+let headerBgUrl="";
+let stagedHeaderBg="";
 let nudgeInterval=null;
 let exitFeedbackShown=false;
 let lockClicks=0;
@@ -2556,8 +2616,23 @@ if(note) note.classList.toggle("hidden",!gameplayLocked);
 
 /* ============ STATIONS (public) ============ */
 
+function renderMenuLock(){
+const card=$("goStations");
+const desc=$("stationsCardDesc");
+const locked=!dueDatePassed();
+if(card) card.classList.toggle("locked",locked);
+if(desc) desc.textContent=locked
+?"🔒 Opens after the due date."
+:"Explore the stations the coordinators have set up.";
+}
+
 function renderStations(){
 const a=$("stationsArea");
+const note=$("stationsLockedNote");
+const locked=!dueDatePassed();
+if(note) note.classList.toggle("hidden",!locked);
+if(a) a.classList.toggle("hidden",locked);
+if(locked) return;
 if(!stations.length){
 a.innerHTML='<div class="empty">No stations have been added yet. Check back soon.</div>';
 return;
@@ -3428,6 +3503,48 @@ setStatus("nudgeIconStatus","Error: "+e.message,"error");
 }
 };
 
+
+$("headerBgInput").onchange=async e=>{
+try{
+const d=await imageData(e.target.files[0],1400);
+stagedHeaderBg=d||"";
+if(d){
+$("headerBgPreview").src=d;
+$("headerBgPreview").classList.remove("hidden");
+}else{
+$("headerBgPreview").classList.add("hidden");
+}
+}catch(err){
+setStatus("headerBgStatus",err.message,"error");
+}
+};
+
+$("saveHeaderBgBtn").onclick=async()=>{
+if(!stagedHeaderBg) return setStatus("headerBgStatus","Choose an image first.","error");
+try{
+await db.collection("meta").doc("headerBg").set(
+{image:stagedHeaderBg,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+setStatus("headerBgStatus","Background updated ✓","success");
+}catch(e){
+setStatus("headerBgStatus","Error: "+e.message,"error");
+}
+};
+
+$("resetHeaderBgBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("headerBg").set({image:""},{merge:true});
+$("headerBgInput").value="";
+$("headerBgPreview").classList.add("hidden");
+$("headerBgPreview").src="";
+stagedHeaderBg="";
+setStatus("headerBgStatus","Background removed ✓","success");
+}catch(e){
+setStatus("headerBgStatus","Error: "+e.message,"error");
+}
+};
+
 async function publishStationDoc(name,desc,editId){
 if(!name) throw new Error("Add a station name.");
 const payload={
@@ -3511,7 +3628,19 @@ return;
 $("stationTable").innerHTML=`
 <table class="sheet">
 <tr><th>Name</th><th>Description</th><th>Action</th></tr>
-${stations.map(s=>`
+${stations.map(s=>{
+if(s.id===stationTableEditingId){
+return `
+<tr>
+<td><input class="mini-input" data-row-name value="${esc(s.name||"")}"></td>
+<td><textarea class="mini-input" data-row-desc>${esc(s.desc||s.description||"")}</textarea></td>
+<td>
+<button class="mini" data-save-st="${s.id}">💾 Save</button>
+<button class="mini" data-cancel-st="${s.id}">✖ Cancel</button>
+</td>
+</tr>`;
+}
+return `
 <tr>
 <td>${esc(s.name||"")}</td>
 <td>${esc(s.desc||s.description||"")}</td>
@@ -3519,7 +3648,8 @@ ${stations.map(s=>`
 <button class="mini" data-edit-st="${s.id}">✏️ Edit</button>
 <button class="mini" data-delete-st="${s.id}">🗑 Remove</button>
 </td>
-</tr>`).join("")}
+</tr>`;
+}).join("")}
 </table>`;
 }
 
@@ -3846,18 +3976,33 @@ if(de) del("puzzles",de.dataset.deleteP,"puzzle");
 };
 
 
-$("stationTable").onclick=e=>{
+$("stationTable").onclick=async e=>{
 const ed=e.target.closest("[data-edit-st]");
+const sv=e.target.closest("[data-save-st]");
+const ca=e.target.closest("[data-cancel-st]");
 const de=e.target.closest("[data-delete-st]");
 if(ed){
-const s=stations.find(x=>x.id===ed.dataset.editSt);
-if(s){
-editingStationId=s.id;
-$("stName").value=s.name||"";
-$("stDesc").value=s.desc||s.description||"";
-$("saveStationBtn").textContent="Save changes";
-setStatus("stationStatus","Editing this station — update the fields and press “Save changes”.","");
-$("stName").scrollIntoView({behavior:"smooth",block:"center"});
+stationTableEditingId=ed.dataset.editSt;
+renderStationTable();
+return;
+}
+if(ca){
+stationTableEditingId=null;
+renderStationTable();
+return;
+}
+if(sv){
+const row=sv.closest("tr");
+const name=row.querySelector("[data-row-name]").value.trim();
+const desc=row.querySelector("[data-row-desc]").value.trim();
+if(!name) return setStatus("stationStatus","Station name is required.","error");
+try{
+await publishStationDoc(name,desc,sv.dataset.saveSt);
+stationTableEditingId=null;
+setStatus("stationStatus","Station updated ✓","success");
+renderStationTable();
+}catch(err){
+setStatus("stationStatus","Error: "+err.message,"error");
 }
 return;
 }
@@ -4491,6 +4636,28 @@ $("leaderboardArea").innerHTML='<div class="empty">Scores will appear after play
 );
 
 
+function renderHeaderBgGate(){
+const locked=!dueDatePassed();
+const note=$("headerBgLocked");
+const controls=$("headerBgControls");
+if(note) note.classList.toggle("hidden",!locked);
+if(controls) controls.classList.toggle("hidden",locked);
+const d=$("headerBgLockedDate");
+if(d) d.textContent=dueDate?fmtDate(dueDate):"not announced yet";
+}
+
+function renderHeaderBg(){
+const hero=document.querySelector(".hero");
+if(!hero) return;
+if(headerBgUrl && dueDatePassed()){
+hero.classList.add("has-bg");
+hero.style.setProperty("--hero-bg-img","url('"+headerBgUrl+"')");
+}else{
+hero.classList.remove("has-bg");
+hero.style.removeProperty("--hero-bg-img");
+}
+}
+
 db.collection("meta")
 .doc("event")
 .onSnapshot(
@@ -4500,7 +4667,22 @@ $("publicDueDate").textContent=fmtDate(dueDate);
 if($("adminDueDate")) $("adminDueDate").value=dueDate;
 renderLeaderboard();
 maybeScheduleLbPopup();
+renderMenuLock();
+if(!$("stationsView").classList.contains("hidden")) renderStations();
+renderHeaderBgGate();
+renderHeaderBg();
 }
+);
+
+
+db.collection("meta")
+.doc("headerBg")
+.onSnapshot(
+d=>{
+headerBgUrl=d.exists?(d.data().image||""):"";
+renderHeaderBg();
+},
+e=>{}
 );
 
 
