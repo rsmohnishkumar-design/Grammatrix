@@ -202,11 +202,12 @@ display:block
 }
 
 .eyebrow{
-font-size:.73rem;
-letter-spacing:.2em;
+font-family:Manrope,sans-serif;
+font-size:clamp(1.2rem,3.2vw,1.7rem);
+letter-spacing:.04em;
 text-transform:uppercase;
-font-weight:700;
-color:rgba(255,255,255,.72)
+font-weight:800;
+color:rgba(255,255,255,.94)
 }
 
 h1{
@@ -1190,6 +1191,8 @@ GRAMMATRIX
 <img id="heroLogoImg" class="hidden" alt="Velammal Annex logo">
 </div>
 
+<div id="heroText">
+
 <div class="eyebrow">Velammal Annex</div>
 
 <h1>Grammatrix</h1>
@@ -1199,6 +1202,8 @@ GRAMMATRIX
 <p class="hero-note">
 Understand grammar, practise language skills and learn from every answer.
 </p>
+
+</div>
 
 </div>
 
@@ -1851,6 +1856,35 @@ Remove Logo
 </div>
 
 
+<!-- HEADER TITLE TEXT -->
+
+<div class="admin-card">
+
+<h3>🔡 Header Title Text</h3>
+
+<p class="admin-note">
+Removes “Velammal Annex”, “Grammatrix” and “The Mega Grammar Learning
+Fest” from the top banner — handy if a full background photo already
+says it all. Reset brings the text back.
+</p>
+
+<div class="btn-row">
+
+<button class="btn danger" id="removeHeaderTextBtn">
+Remove Header Text
+</button>
+
+<button class="btn secondary" id="resetHeaderTextBtn">
+Reset
+</button>
+
+</div>
+
+<div id="heroTextStatus" class="status"></div>
+
+</div>
+
+
 <!-- GRAMMAR QUESTION -->
 
 <div class="admin-card">
@@ -2368,6 +2402,7 @@ let lockClicks=0;
 let coordinatorLocked=false;
 let lockBypass=false;
 let gameplayLocked=false;
+let headerTextHidden=false;
 
 /* per-attempt quiz sessions */
 let gSession=null;
@@ -3756,6 +3791,31 @@ setStatus("heroLogoStatus","Error: "+e.message,"error");
 }
 };
 
+
+$("removeHeaderTextBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("flags").set(
+{headerTextHidden:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+setStatus("heroTextStatus","Header text removed ✓","success");
+}catch(e){
+setStatus("heroTextStatus","Error: "+e.message,"error");
+}
+};
+
+$("resetHeaderTextBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("flags").set(
+{headerTextHidden:false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+setStatus("heroTextStatus","Header text reset to normal ✓","success");
+}catch(e){
+setStatus("heroTextStatus","Error: "+e.message,"error");
+}
+};
+
 async function publishStationDoc(name,desc,editId){
 if(!name) throw new Error("Add a station name.");
 const payload={
@@ -5026,12 +5086,19 @@ e=>{}
 );
 
 
+function renderHeaderTextVisibility(){
+const t=$("heroText");
+if(t) t.classList.toggle("hidden",headerTextHidden);
+}
+
 db.collection("meta")
 .doc("flags")
 .onSnapshot(
 d=>{
 gameplayLocked=d.exists?!!d.data().gameplayLocked:false;
 renderGameplayLock();
+headerTextHidden=d.exists?!!d.data().headerTextHidden:false;
+renderHeaderTextVisibility();
 },
 e=>{}
 );
