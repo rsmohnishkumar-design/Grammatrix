@@ -1093,7 +1093,6 @@ margin-right:0
 .station{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
 .station h3{font-family:Manrope,sans-serif;font-size:1.1rem;margin-bottom:8px}
 .station p{color:#3d4a63;font-size:.95rem;line-height:1.6;white-space:pre-wrap}
-.big-card.locked{opacity:.55;filter:grayscale(.35)}
 .sheet input.mini-input,.sheet textarea.mini-input{width:100%;min-width:140px;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;resize:vertical;white-space:normal}
 .option.selected{border-color:var(--primary);background:var(--soft);box-shadow:0 0 0 2px rgba(90,79,242,.18)}
 .puzzle-input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#fbfcff;color:var(--ink);font-size:1rem;margin-bottom:4px}
@@ -1201,7 +1200,7 @@ Understand grammar, practise language skills and learn from every answer.
 <button class="big-card" id="goStations">
 <span class="bc-ic">🏁</span>
 <h3>Stations</h3>
-<p id="stationsCardDesc">Explore the stations the coordinators have set up.</p>
+<p>Explore the stations the coordinators have set up.</p>
 </button>
 
 <button class="big-card" id="goGameplay">
@@ -1223,10 +1222,6 @@ Understand grammar, practise language skills and learn from every answer.
 <div class="section-head">
 <h2>🏁 Stations</h2>
 <p>Visit each station to take part.</p>
-</div>
-
-<div id="stationsLockedNote" class="empty hidden">
-🔒 Stations open after the due date.
 </div>
 
 <div id="stationsArea" class="station-grid">
@@ -1699,6 +1694,103 @@ Save Due Date
 </div>
 
 
+<!-- STATION -->
+
+<div class="admin-card">
+
+<h3>🏁 Station</h3>
+
+<div class="parser">
+
+<strong>📋 Paste &amp; Auto-Publish (multiple at once)</strong>
+
+<p class="admin-note">
+Paste one or more stations, each as "Station Name: …" then
+"Description: …" on the next line, with a blank line between
+stations. Publishes every station found in one go.
+</p>
+
+<textarea
+id="stationsPaste"
+placeholder="Station Name: Tense Tower&#10;Description: Climb through past, present and future tenses.&#10;&#10;Station Name: Vocabulary Hunt&#10;Description: A fun hunt to build and test vocabulary skills."></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="parseStationsBtn">
+⚡ Auto-Fill &amp; Publish All
+</button>
+
+</div>
+
+<div id="stationsParserStatus" class="status"></div>
+
+</div>
+
+
+<label>Station name</label>
+<input id="stName" placeholder="e.g. Tense Tower">
+
+<label>Description</label>
+<textarea id="stDesc" placeholder="What happens at this station…"></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="saveStationBtn">
+Publish Station
+</button>
+
+<button class="btn secondary" id="clearStationBtn">
+Clear
+</button>
+
+</div>
+
+<div id="stationStatus" class="status"></div>
+
+</div>
+
+
+<!-- HEADER BACKGROUND IMAGE -->
+
+<div class="admin-card">
+
+<h3>🖼 Header Background Image</h3>
+
+<p class="admin-note">
+Sets a photo behind the top “Grammatrix” banner on the home page —
+great for expo photos.
+</p>
+
+<div id="headerBgControls">
+
+<label>Background image</label>
+<input id="headerBgInput" type="file" accept="image/*">
+
+<img
+id="headerBgPreview"
+class="hidden"
+style="width:180px;height:100px;object-fit:cover;border-radius:14px;margin:8px 0"
+alt="Preview">
+
+<div class="btn-row">
+
+<button class="btn primary" id="saveHeaderBgBtn">
+Save Background
+</button>
+
+<button class="btn secondary" id="resetHeaderBgBtn">
+Remove Background
+</button>
+
+</div>
+
+<div id="headerBgStatus" class="status"></div>
+
+</div>
+
+</div>
+
+
 <!-- GRAMMAR QUESTION -->
 
 <div class="admin-card">
@@ -1928,62 +2020,6 @@ Clear
 </div>
 
 
-<!-- STATION -->
-
-<div class="admin-card">
-
-<h3>🏁 Station</h3>
-
-<div class="parser">
-
-<strong>📋 Paste &amp; Auto-Publish (multiple at once)</strong>
-
-<p class="admin-note">
-Paste one or more stations, each as "Station Name: …" then
-"Description: …" on the next line, with a blank line between
-stations. Publishes every station found in one go.
-</p>
-
-<textarea
-id="stationsPaste"
-placeholder="Station Name: Tense Tower&#10;Description: Climb through past, present and future tenses.&#10;&#10;Station Name: Vocabulary Hunt&#10;Description: A fun hunt to build and test vocabulary skills."></textarea>
-
-<div class="btn-row">
-
-<button class="btn primary" id="parseStationsBtn">
-⚡ Auto-Fill &amp; Publish All
-</button>
-
-</div>
-
-<div id="stationsParserStatus" class="status"></div>
-
-</div>
-
-
-<label>Station name</label>
-<input id="stName" placeholder="e.g. Tense Tower">
-
-<label>Description</label>
-<textarea id="stDesc" placeholder="What happens at this station…"></textarea>
-
-<div class="btn-row">
-
-<button class="btn primary" id="saveStationBtn">
-Publish Station
-</button>
-
-<button class="btn secondary" id="clearStationBtn">
-Clear
-</button>
-
-</div>
-
-<div id="stationStatus" class="status"></div>
-
-</div>
-
-
 <!-- FEEDBACK NUDGE ICON -->
 
 <div class="admin-card">
@@ -2018,51 +2054,6 @@ Reset to Default
 </div>
 
 <div id="nudgeIconStatus" class="status"></div>
-
-</div>
-
-
-<!-- HEADER BACKGROUND IMAGE -->
-
-<div class="admin-card">
-
-<h3>🖼 Header Background Image</h3>
-
-<p class="admin-note">
-Sets a photo behind the top “Grammatrix” banner on the home page —
-great for expo photos. Unlocks once the due date has passed.
-</p>
-
-<div id="headerBgLocked" class="status hidden">
-🔒 Unlocks after the due date (<span id="headerBgLockedDate">not announced yet</span>).
-</div>
-
-<div id="headerBgControls">
-
-<label>Background image</label>
-<input id="headerBgInput" type="file" accept="image/*">
-
-<img
-id="headerBgPreview"
-class="hidden"
-style="width:180px;height:100px;object-fit:cover;border-radius:14px;margin:8px 0"
-alt="Preview">
-
-<div class="btn-row">
-
-<button class="btn primary" id="saveHeaderBgBtn">
-Save Background
-</button>
-
-<button class="btn secondary" id="resetHeaderBgBtn">
-Remove Background
-</button>
-
-</div>
-
-<div id="headerBgStatus" class="status"></div>
-
-</div>
 
 </div>
 
@@ -2616,23 +2607,8 @@ if(note) note.classList.toggle("hidden",!gameplayLocked);
 
 /* ============ STATIONS (public) ============ */
 
-function renderMenuLock(){
-const card=$("goStations");
-const desc=$("stationsCardDesc");
-const locked=!dueDatePassed();
-if(card) card.classList.toggle("locked",locked);
-if(desc) desc.textContent=locked
-?"🔒 Opens after the due date."
-:"Explore the stations the coordinators have set up.";
-}
-
 function renderStations(){
 const a=$("stationsArea");
-const note=$("stationsLockedNote");
-const locked=!dueDatePassed();
-if(note) note.classList.toggle("hidden",!locked);
-if(a) a.classList.toggle("hidden",locked);
-if(locked) return;
 if(!stations.length){
 a.innerHTML='<div class="empty">No stations have been added yet. Check back soon.</div>';
 return;
@@ -4636,20 +4612,10 @@ $("leaderboardArea").innerHTML='<div class="empty">Scores will appear after play
 );
 
 
-function renderHeaderBgGate(){
-const locked=!dueDatePassed();
-const note=$("headerBgLocked");
-const controls=$("headerBgControls");
-if(note) note.classList.toggle("hidden",!locked);
-if(controls) controls.classList.toggle("hidden",locked);
-const d=$("headerBgLockedDate");
-if(d) d.textContent=dueDate?fmtDate(dueDate):"not announced yet";
-}
-
 function renderHeaderBg(){
 const hero=document.querySelector(".hero");
 if(!hero) return;
-if(headerBgUrl && dueDatePassed()){
+if(headerBgUrl){
 hero.classList.add("has-bg");
 hero.style.setProperty("--hero-bg-img","url('"+headerBgUrl+"')");
 }else{
@@ -4667,10 +4633,6 @@ $("publicDueDate").textContent=fmtDate(dueDate);
 if($("adminDueDate")) $("adminDueDate").value=dueDate;
 renderLeaderboard();
 maybeScheduleLbPopup();
-renderMenuLock();
-if(!$("stationsView").classList.contains("hidden")) renderStations();
-renderHeaderBgGate();
-renderHeaderBg();
 }
 );
 
