@@ -1108,7 +1108,11 @@ margin-right:0
 .station{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
 .station h3{font-family:Manrope,sans-serif;font-size:1.1rem;margin-bottom:8px}
 .station p{color:#3d4a63;font-size:.95rem;line-height:1.6;white-space:pre-wrap}
-.sheet input.mini-input,.sheet textarea.mini-input{width:100%;min-width:140px;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;resize:vertical;white-space:normal}
+.sheet input.mini-input,.sheet textarea.mini-input,.sheet select.mini-input{width:100%;min-width:140px;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;resize:vertical;white-space:normal}
+.inline-edit-form{padding:6px 2px;text-align:left;white-space:normal}
+.inline-edit-form label{display:block;margin:10px 0 4px;font-size:.78rem;font-weight:600;color:var(--muted)}
+.inline-edit-form .opt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.inline-edit-form .btn-row{margin-top:12px}
 .option.selected{border-color:var(--primary);background:var(--soft);box-shadow:0 0 0 2px rgba(90,79,242,.18)}
 .puzzle-input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#fbfcff;color:var(--ink);font-size:1rem;margin-bottom:4px}
 .review-list{display:grid;gap:10px;margin:6px 0 16px;text-align:left}
@@ -1880,6 +1884,33 @@ placeholder="1. _________ is ...&#10;&#10;A) ...&#10;B) ...&#10;C) ...&#10;D) ..
 </div>
 
 
+<div class="parser">
+
+<strong>📋 Paste &amp; Auto-Publish (multiple at once)</strong>
+
+<p class="admin-note">
+Paste several questions, each formatted like the box above, separated
+by a line containing just <code>---</code> between questions. Publishes
+every question found in one go.
+</p>
+
+<textarea
+id="questionsBulkPaste"
+placeholder="1. _________ is ...&#10;&#10;A) ...&#10;B) ...&#10;C) ...&#10;D) ...&#10;&#10;Ans: A&#10;&#10;Explanation: ...&#10;&#10;---&#10;&#10;2. _________ is ...&#10;&#10;A) ...&#10;B) ...&#10;C) ...&#10;D) ...&#10;&#10;Ans: B"></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="parseQuestionsBulkBtn">
+⚡ Auto-Fill &amp; Publish All
+</button>
+
+</div>
+
+<div id="questionsBulkStatus" class="status"></div>
+
+</div>
+
+
 <div class="admin-grid">
 
 <div>
@@ -2009,6 +2040,33 @@ placeholder="Title: Fix the Sentence&#10;Type: Grammar Fix&#10;Puzzle: Rewrite �
 </div>
 
 <div id="puzzleParserStatus" class="status"></div>
+
+</div>
+
+
+<div class="parser">
+
+<strong>📋 Paste &amp; Auto-Publish (multiple at once)</strong>
+
+<p class="admin-note">
+Paste several puzzles, each as "Title: …", "Type: …", "Puzzle: …",
+"Answer: …", "Explanation: …", with a blank line between puzzles.
+Publishes every puzzle found in one go.
+</p>
+
+<textarea
+id="puzzlesBulkPaste"
+placeholder="Title: Fix the Sentence&#10;Type: Grammar Fix&#10;Puzzle: Rewrite — she don't like it.&#10;Answer: She doesn't like it.&#10;Explanation: ...&#10;&#10;Title: Word Hunt&#10;Type: Vocabulary&#10;Puzzle: Find a synonym for happy.&#10;Answer: Joyful"></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="parsePuzzlesBulkBtn">
+⚡ Auto-Fill &amp; Publish All
+</button>
+
+</div>
+
+<div id="puzzlesBulkStatus" class="status"></div>
 
 </div>
 
@@ -2296,6 +2354,8 @@ let editingQuestionId=null;
 let editingPuzzleId=null;
 let editingStationId=null;
 let stationTableEditingId=null;
+let questionTableEditingId=null;
+let puzzleTableEditingId=null;
 let nudgeIconUrl="";
 let stagedNudgeIcon="";
 let headerBgUrl="";
@@ -3347,6 +3407,43 @@ setStatus("parserStatus","Publish failed: "+e.message,"error");
 }
 };
 
+function parseQuestionsBulk(raw){
+const text=String(raw||"").replace(/\r/g,"").trim();
+if(!text) throw new Error("Paste one or more questions first.");
+const blocks=text.split(/\n\s*-{3,}\s*\n/).map(b=>b.trim()).filter(Boolean);
+if(!blocks.length) throw new Error("Paste one or more questions first.");
+return blocks;
+}
+
+$("parseQuestionsBulkBtn").onclick=async()=>{
+let blocks;
+try{
+blocks=parseQuestionsBulk($("questionsBulkPaste").value);
+}catch(e){
+return setStatus("questionsBulkStatus",e.message,"error");
+}
+setStatus("questionsBulkStatus",`Publishing 0 / ${blocks.length}…`,"");
+let done=0,failed=0;
+for(const block of blocks){
+try{
+const x=parseQuestion(block);
+await publishQuestionDoc(x.question,x.options,x.correctIndex,x.explanation,null);
+done++;
+}catch(e){
+failed++;
+}
+setStatus("questionsBulkStatus",`Publishing ${done+failed} / ${blocks.length}…`,"");
+}
+$("questionsBulkPaste").value="";
+setStatus(
+"questionsBulkStatus",
+failed
+?`✓ Published ${done} of ${blocks.length} (${failed} failed).`
+:`✓ Published all ${done} questions.`,
+failed?"error":"success"
+);
+};
+
 async function saveQuestion(){
 const question=$("qText").value.trim();
 const options=[0,1,2,3].map(i=>$("q"+i).value.trim());
@@ -3442,6 +3539,43 @@ setStatus("puzzleParserStatus","✓ Parsed and published.","success");
 }catch(e){
 setStatus("puzzleParserStatus","Publish failed: "+e.message,"error");
 }
+};
+
+function parsePuzzlesBulk(raw){
+const text=String(raw||"").replace(/\r/g,"").trim();
+if(!text) throw new Error("Paste one or more puzzles first.");
+const blocks=text.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+if(!blocks.length) throw new Error("Paste one or more puzzles first.");
+return blocks;
+}
+
+$("parsePuzzlesBulkBtn").onclick=async()=>{
+let blocks;
+try{
+blocks=parsePuzzlesBulk($("puzzlesBulkPaste").value);
+}catch(e){
+return setStatus("puzzlesBulkStatus",e.message,"error");
+}
+setStatus("puzzlesBulkStatus",`Publishing 0 / ${blocks.length}…`,"");
+let done=0,failed=0;
+for(const block of blocks){
+try{
+const d=parsePuzzle(block);
+await publishPuzzleDoc(d,null);
+done++;
+}catch(e){
+failed++;
+}
+setStatus("puzzlesBulkStatus",`Publishing ${done+failed} / ${blocks.length}…`,"");
+}
+$("puzzlesBulkPaste").value="";
+setStatus(
+"puzzlesBulkStatus",
+failed
+?`✓ Published ${done} of ${blocks.length} (${failed} failed).`
+:`✓ Published all ${done} puzzles.`,
+failed?"error":"success"
+);
 };
 
 
@@ -3820,7 +3954,56 @@ $("questionTable").innerHTML=`
 
 </tr>
 
-${questions.map(q=>`
+${questions.map(q=>{
+
+if(q.id===questionTableEditingId){
+const opts=q.options||[];
+return `
+<tr>
+<td colspan="5">
+<div class="inline-edit-form">
+
+<label>Question</label>
+<textarea class="mini-input" data-row-question>${esc(q.question||"")}</textarea>
+
+<div class="opt-grid">
+<div>
+<label>Option A</label>
+<input class="mini-input" data-row-opt="0" value="${esc(opts[0]||"")}">
+</div>
+<div>
+<label>Option B</label>
+<input class="mini-input" data-row-opt="1" value="${esc(opts[1]||"")}">
+</div>
+<div>
+<label>Option C</label>
+<input class="mini-input" data-row-opt="2" value="${esc(opts[2]||"")}">
+</div>
+<div>
+<label>Option D</label>
+<input class="mini-input" data-row-opt="3" value="${esc(opts[3]||"")}">
+</div>
+</div>
+
+<label>Correct option</label>
+<select class="mini-input" data-row-correct>
+${["A","B","C","D"].map((l,i)=>`<option value="${i}"${(+q.correctIndex||0)===i?" selected":""}>${l}</option>`).join("")}
+</select>
+
+<label>Explanation</label>
+<textarea class="mini-input" data-row-explanation>${esc(q.explanation||"")}</textarea>
+
+<div class="btn-row">
+<button class="mini" data-save-q="${q.id}">💾 Save</button>
+<button class="mini" data-cancel-q="${q.id}">✖ Cancel</button>
+</div>
+
+</div>
+</td>
+</tr>`;
+}
+
+return `
 
 <tr>
 
@@ -3867,7 +4050,9 @@ data-delete-q="${q.id}">
 
 </tr>
 
-`).join("")}
+`;
+
+}).join("")}
 
 </table>
 
@@ -3888,6 +4073,8 @@ return;
 }
 
 
+const PUZZLE_TYPES=["Word Puzzle","Grammar Fix","Sentence Builder","Vocabulary","Riddle"];
+
 $("puzzleTable").innerHTML=`
 
 <table class="sheet">
@@ -3901,7 +4088,42 @@ $("puzzleTable").innerHTML=`
 
 </tr>
 
-${puzzles.map(p=>`
+${puzzles.map(p=>{
+
+if(p.id===puzzleTableEditingId){
+return `
+<tr>
+<td colspan="4">
+<div class="inline-edit-form">
+
+<label>Title</label>
+<input class="mini-input" data-row-title value="${esc(p.title||"")}">
+
+<label>Type</label>
+<select class="mini-input" data-row-type>
+${PUZZLE_TYPES.map(t=>`<option${(p.type||"Word Puzzle")===t?" selected":""}>${t}</option>`).join("")}
+</select>
+
+<label>Puzzle</label>
+<textarea class="mini-input" data-row-text>${esc(p.text||"")}</textarea>
+
+<label>Answer / solution</label>
+<input class="mini-input" data-row-answer value="${esc(p.answer||"")}">
+
+<label>Explanation (optional)</label>
+<textarea class="mini-input" data-row-explanation>${esc(p.explanation||"")}</textarea>
+
+<div class="btn-row">
+<button class="mini" data-save-p="${p.id}">💾 Save</button>
+<button class="mini" data-cancel-p="${p.id}">✖ Cancel</button>
+</div>
+
+</div>
+</td>
+</tr>`;
+}
+
+return `
 
 <tr>
 
@@ -3935,7 +4157,9 @@ data-delete-p="${p.id}">
 
 </tr>
 
-`).join("")}
+`;
+
+}).join("")}
 
 </table>
 
@@ -4010,20 +4234,34 @@ setStatus("stationStatus","","");
 };
 
 
-$("questionTable").onclick=e=>{
+$("questionTable").onclick=async e=>{
 const ed=e.target.closest("[data-edit-q]");
+const sv=e.target.closest("[data-save-q]");
+const ca=e.target.closest("[data-cancel-q]");
 const de=e.target.closest("[data-delete-q]");
 if(ed){
-const q=questions.find(x=>x.id===ed.dataset.editQ);
-if(q){
-editingQuestionId=q.id;
-$("qText").value=q.question||"";
-for(let i=0;i<4;i++) $("q"+i).value=(q.options&&q.options[i])||"";
-$("qCorrect").value=String(q.correctIndex==null?0:q.correctIndex);
-$("qExplanation").value=q.explanation||"";
-$("saveQuestionBtn").textContent="Save changes";
-setStatus("questionStatus","Editing this question — update the fields and press “Save changes”.","");
-$("qText").scrollIntoView({behavior:"smooth",block:"center"});
+questionTableEditingId=ed.dataset.editQ;
+renderQuestionTable();
+return;
+}
+if(ca){
+questionTableEditingId=null;
+renderQuestionTable();
+return;
+}
+if(sv){
+const row=sv.closest("tr");
+const question=row.querySelector("[data-row-question]").value.trim();
+const options=[0,1,2,3].map(i=>row.querySelector(`[data-row-opt="${i}"]`).value.trim());
+const correctIndex=+row.querySelector("[data-row-correct]").value;
+const explanation=row.querySelector("[data-row-explanation]").value.trim();
+try{
+await publishQuestionDoc(question,options,correctIndex,explanation,sv.dataset.saveQ);
+questionTableEditingId=null;
+setStatus("questionStatus","Question updated ✓","success");
+renderQuestionTable();
+}catch(err){
+setStatus("questionStatus","Error: "+err.message,"error");
 }
 return;
 }
@@ -4031,21 +4269,37 @@ if(de) del("questions",de.dataset.deleteQ,"question");
 };
 
 
-$("puzzleTable").onclick=e=>{
+$("puzzleTable").onclick=async e=>{
 const ed=e.target.closest("[data-edit-p]");
+const sv=e.target.closest("[data-save-p]");
+const ca=e.target.closest("[data-cancel-p]");
 const de=e.target.closest("[data-delete-p]");
 if(ed){
-const p=puzzles.find(x=>x.id===ed.dataset.editP);
-if(p){
-editingPuzzleId=p.id;
-$("pTitle").value=p.title||"";
-setSelect($("pType"),p.type||"Word Puzzle");
-$("pText").value=p.text||"";
-$("pAnswer").value=p.answer||"";
-$("pExplanation").value=p.explanation||"";
-$("savePuzzleBtn").textContent="Save changes";
-setStatus("puzzleStatus","Editing this puzzle — update the fields and press “Save changes”.","");
-$("pTitle").scrollIntoView({behavior:"smooth",block:"center"});
+puzzleTableEditingId=ed.dataset.editP;
+renderPuzzleTable();
+return;
+}
+if(ca){
+puzzleTableEditingId=null;
+renderPuzzleTable();
+return;
+}
+if(sv){
+const row=sv.closest("tr");
+const d={
+title:row.querySelector("[data-row-title]").value.trim(),
+type:row.querySelector("[data-row-type]").value,
+text:row.querySelector("[data-row-text]").value.trim(),
+answer:row.querySelector("[data-row-answer]").value.trim(),
+explanation:row.querySelector("[data-row-explanation]").value.trim()
+};
+try{
+await publishPuzzleDoc(d,sv.dataset.saveP);
+puzzleTableEditingId=null;
+setStatus("puzzleStatus","Puzzle updated ✓","success");
+renderPuzzleTable();
+}catch(err){
+setStatus("puzzleStatus","Error: "+err.message,"error");
 }
 return;
 }
