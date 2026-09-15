@@ -186,6 +186,21 @@ z-index:2;
 margin-top:55px
 }
 
+.hero-logo{
+min-height:60px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-bottom:10px
+}
+
+.hero-logo img{
+max-height:60px;
+max-width:220px;
+object-fit:contain;
+display:block
+}
+
 .eyebrow{
 font-size:.73rem;
 letter-spacing:.2em;
@@ -1167,6 +1182,10 @@ GRAMMATRIX
 
 <div class="hero-inner">
 
+<div class="hero-logo" id="heroLogo">
+<img id="heroLogoImg" class="hidden" alt="Velammal Annex logo">
+</div>
+
 <div class="eyebrow">Velammal Annex</div>
 
 <h1>Grammatrix</h1>
@@ -1791,6 +1810,43 @@ Remove Background
 </div>
 
 
+<!-- HEADER LOGO -->
+
+<div class="admin-card">
+
+<h3>🏫 Header Logo</h3>
+
+<p class="admin-note">
+Sets the small logo shown above “Velammal Annex” at the top of the
+home page banner — e.g. the school crest.
+</p>
+
+<label>Logo image</label>
+<input id="heroLogoInput" type="file" accept="image/*">
+
+<img
+id="heroLogoPreview"
+class="hidden"
+style="height:70px;object-fit:contain;margin:8px 0"
+alt="Preview">
+
+<div class="btn-row">
+
+<button class="btn primary" id="saveHeroLogoBtn">
+Save Logo
+</button>
+
+<button class="btn secondary" id="resetHeroLogoBtn">
+Remove Logo
+</button>
+
+</div>
+
+<div id="heroLogoStatus" class="status"></div>
+
+</div>
+
+
 <!-- GRAMMAR QUESTION -->
 
 <div class="admin-card">
@@ -2244,6 +2300,8 @@ let nudgeIconUrl="";
 let stagedNudgeIcon="";
 let headerBgUrl="";
 let stagedHeaderBg="";
+let heroLogoUrl="";
+let stagedHeroLogo="";
 let nudgeInterval=null;
 let exitFeedbackShown=false;
 let lockClicks=0;
@@ -2939,6 +2997,7 @@ function normalize(v){
 return String(v||"")
 .trim()
 .replace(/\s+/g," ")
+.replace(/[.!?]+$/,"")
 .toLowerCase();
 
 }
@@ -3518,6 +3577,48 @@ stagedHeaderBg="";
 setStatus("headerBgStatus","Background removed ✓","success");
 }catch(e){
 setStatus("headerBgStatus","Error: "+e.message,"error");
+}
+};
+
+
+$("heroLogoInput").onchange=async e=>{
+try{
+const d=await imageData(e.target.files[0],400);
+stagedHeroLogo=d||"";
+if(d){
+$("heroLogoPreview").src=d;
+$("heroLogoPreview").classList.remove("hidden");
+}else{
+$("heroLogoPreview").classList.add("hidden");
+}
+}catch(err){
+setStatus("heroLogoStatus",err.message,"error");
+}
+};
+
+$("saveHeroLogoBtn").onclick=async()=>{
+if(!stagedHeroLogo) return setStatus("heroLogoStatus","Choose an image first.","error");
+try{
+await db.collection("meta").doc("logo").set(
+{image:stagedHeroLogo,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+setStatus("heroLogoStatus","Logo updated ✓","success");
+}catch(e){
+setStatus("heroLogoStatus","Error: "+e.message,"error");
+}
+};
+
+$("resetHeroLogoBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("logo").set({image:""},{merge:true});
+$("heroLogoInput").value="";
+$("heroLogoPreview").classList.add("hidden");
+$("heroLogoPreview").src="";
+stagedHeroLogo="";
+setStatus("heroLogoStatus","Logo removed ✓","success");
+}catch(e){
+setStatus("heroLogoStatus","Error: "+e.message,"error");
 }
 };
 
@@ -4643,6 +4744,29 @@ db.collection("meta")
 d=>{
 headerBgUrl=d.exists?(d.data().image||""):"";
 renderHeaderBg();
+},
+e=>{}
+);
+
+
+function renderHeroLogo(){
+const img=$("heroLogoImg");
+if(!img) return;
+if(heroLogoUrl){
+img.src=heroLogoUrl;
+img.classList.remove("hidden");
+}else{
+img.src="";
+img.classList.add("hidden");
+}
+}
+
+db.collection("meta")
+.doc("logo")
+.onSnapshot(
+d=>{
+heroLogoUrl=d.exists?(d.data().image||""):"";
+renderHeroLogo();
 },
 e=>{}
 );
