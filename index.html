@@ -1917,7 +1917,8 @@ Reset
 
 <p class="admin-note">
 Changes the actual wording shown at the top of the home page. Leave a
-field blank to keep the default text.
+field blank to hide that line entirely — it won't fall back to the
+default text. “Reset to Default” brings back the original wording.
 </p>
 
 <label>Eyebrow (small line above the title)</label>
@@ -2270,6 +2271,38 @@ Reset to Default
 </div>
 
 
+<!-- FEEDBACK WORDS -->
+
+<div class="admin-card">
+
+<h3>💬 Edit Feedback Words</h3>
+
+<p class="admin-note">
+The rotating messages next to the feedback button, one per line.
+Leave blank and reset to go back to the default wording.
+</p>
+
+<textarea
+id="feedbackWordsInput"
+placeholder="Mohnish Kumar is saying — write your feedback!"></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="saveFeedbackWordsBtn">
+Save Words
+</button>
+
+<button class="btn secondary" id="resetFeedbackWordsBtn">
+Reset to Default
+</button>
+
+</div>
+
+<div id="feedbackWordsStatus" class="status"></div>
+
+</div>
+
+
 <!-- PUBLISHED TABLES -->
 
 <div class="admin-card">
@@ -2310,11 +2343,21 @@ Loading…
 <h3>👥 Players &amp; Scores</h3>
 
 <p class="admin-note">
-Built automatically as players answer questions. “Remove” takes one player off the leaderboard.
+Built automatically as players answer questions. Edit a score directly in
+the table, or add a player manually below — a manually set score ranks on
+the leaderboard exactly like an earned one (higher score moves up, lower
+score moves down). “Remove” takes one player off the leaderboard.
 “Reset leaderboard” clears every player's score.
 </p>
 
+<label>Player name</label>
+<input id="manualScoreName" placeholder="e.g. Priya">
+
+<label>Score</label>
+<input id="manualScoreValue" type="number" step="1" placeholder="e.g. 100">
+
 <div class="btn-row">
+<button class="btn primary" id="addManualScoreBtn">Add / Update Player</button>
 <button class="btn danger" id="resetLeaderboardBtn">Reset leaderboard</button>
 </div>
 
@@ -2332,6 +2375,12 @@ Loading…
 <div class="admin-card">
 
 <h3>💬 Feedback</h3>
+
+<div class="btn-row">
+<button class="btn danger" id="resetFeedbackBtn">Reset All Feedback</button>
+</div>
+
+<div id="feedbackAdminStatus" class="status"></div>
 
 <div id="feedbackTable" class="feedback-admin">
 
@@ -3774,6 +3823,30 @@ setStatus("nudgeIconStatus","Error: "+e.message,"error");
 };
 
 
+$("saveFeedbackWordsBtn").onclick=async()=>{
+const lines=$("feedbackWordsInput").value.split("\n").map(x=>x.trim()).filter(Boolean);
+if(!lines.length) return setStatus("feedbackWordsStatus","Add at least one line.","error");
+try{
+await db.collection("meta").doc("nudgeMessages").set(
+{list:lines,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+setStatus("feedbackWordsStatus","Feedback words saved ✓","success");
+}catch(e){
+setStatus("feedbackWordsStatus","Error: "+e.message,"error");
+}
+};
+
+$("resetFeedbackWordsBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("nudgeMessages").delete();
+setStatus("feedbackWordsStatus","Reset to default wording ✓","success");
+}catch(e){
+setStatus("feedbackWordsStatus","Error: "+e.message,"error");
+}
+};
+
+
 $("headerBgInput").onchange=async e=>{
 try{
 const d=await imageData(e.target.files[0],1400);
@@ -3922,10 +3995,7 @@ setStatus("headerTextContentStatus","Error: "+e.message,"error");
 
 $("resetHeaderTextContentBtn").onclick=async()=>{
 try{
-await db.collection("meta").doc("headerText").set(
-{eyebrow:"",title:"",subtitle:"",note:""},
-{merge:true}
-);
+await db.collection("meta").doc("headerText").delete();
 $("headerTextEyebrow").value="";
 $("headerTextTitle").value="";
 $("headerTextSubtitle").value="";
@@ -4059,7 +4129,10 @@ ${list.map(p=>`
 <td>${Number(p.grammarCorrect)||0} / ${Number(p.grammarTotal)||0}</td>
 <td>${Number(p.puzzleCorrect)||0} / ${Number(p.puzzleTotal)||0}</td>
 <td>${Number(p.score)||0}</td>
-<td><button class="mini" data-delete-score="${p.id}">🗑 Remove</button></td>
+<td>
+<button class="mini" data-edit-score="${p.id}" data-score-name="${esc(p.name||"")}" data-score-value="${Number(p.score)||0}">✏️ Edit</button>
+<button class="mini" data-delete-score="${p.id}">🗑 Remove</button>
+</td>
 </tr>`).join("")}
 </table>`;
 }
@@ -4385,6 +4458,10 @@ f.createdAt?.toDate
 }
 </small>
 
+<div class="btn-row">
+<button class="mini" data-delete-fb="${f.id}">🗑 Remove</button>
+</div>
+
 </div>
 
 `).join("");
@@ -4523,7 +4600,32 @@ if(de) del("stations",de.dataset.deleteSt,"station");
 
 $("playersTable").onclick=e=>{
 const b=e.target.closest("[data-delete-score]");
+const ed=e.target.closest("[data-edit-score]");
+if(ed){
+$("manualScoreName").value=ed.dataset.scoreName||"";
+$("manualScoreValue").value=ed.dataset.scoreValue||"0";
+$("manualScoreName").scrollIntoView({behavior:"smooth",block:"center"});
+return;
+}
 if(b) del("scores",b.dataset.deleteScore,"player");
+};
+
+$("addManualScoreBtn").onclick=async()=>{
+const name=$("manualScoreName").value.trim();
+const score=+$("manualScoreValue").value;
+if(!name) return setStatus("playersStatus","Enter a player name.","error");
+if(!Number.isFinite(score)) return setStatus("playersStatus","Enter a valid score.","error");
+try{
+await db.collection("scores").doc(keyFor(name)).set(
+{name,score,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+$("manualScoreName").value="";
+$("manualScoreValue").value="";
+setStatus("playersStatus","Player saved ✓","success");
+}catch(e){
+setStatus("playersStatus","Error: "+e.message,"error");
+}
 };
 
 $("resetLeaderboardBtn").onclick=async()=>{
@@ -4535,6 +4637,24 @@ for(const d of snap.docs){ await d.ref.delete(); }
 setStatus("playersStatus","Leaderboard reset ✓ ("+snap.size+" removed)","success");
 }catch(e){
 setStatus("playersStatus","Error: "+e.message,"error");
+}
+};
+
+
+$("feedbackTable").onclick=e=>{
+const b=e.target.closest("[data-delete-fb]");
+if(b) del("feedback",b.dataset.deleteFb,"feedback entry");
+};
+
+$("resetFeedbackBtn").onclick=async()=>{
+if(!confirm("Reset all feedback? This permanently removes every submitted feedback entry."))return;
+setStatus("feedbackAdminStatus","Resetting…","");
+try{
+const snap=await db.collection("feedback").get();
+for(const d of snap.docs){ await d.ref.delete(); }
+setStatus("feedbackAdminStatus","Feedback reset ✓ ("+snap.size+" removed)","success");
+}catch(e){
+setStatus("feedbackAdminStatus","Error: "+e.message,"error");
 }
 };
 
@@ -4847,9 +4967,15 @@ const nudgeMessages=[
 ];
 
 let nudgeIdx=0;
+let nudgeMessagesOverride=null;
+
+function getNudgeMessages(){
+return (nudgeMessagesOverride&&nudgeMessagesOverride.length)?nudgeMessagesOverride:nudgeMessages;
+}
 
 function rotateNudge(){
-$("nudgeText").textContent=nudgeMessages[nudgeIdx%nudgeMessages.length];
+const list=getNudgeMessages();
+$("nudgeText").textContent=list[nudgeIdx%list.length];
 nudgeIdx++;
 }
 
@@ -5189,12 +5315,21 @@ e=>{}
 );
 
 
+let headerTextDocExists=false;
+
 function renderHeaderTextContent(){
 const eb=$("heroEyebrow"),h1=$("heroTitle"),sub=$("heroSubtitle"),note=$("heroNoteText");
-if(eb) eb.textContent=headerTextOverride.eyebrow||"Velammal Annex";
-if(h1) h1.textContent=headerTextOverride.title||"Grammatrix";
-if(sub) sub.textContent=headerTextOverride.subtitle||"The Mega Grammar Learning Fest";
-if(note) note.textContent=headerTextOverride.note||"Understand grammar, practise language skills and learn from every answer.";
+if(!headerTextDocExists){
+if(eb){ eb.textContent="Velammal Annex"; eb.classList.remove("hidden"); }
+if(h1){ h1.textContent="Grammatrix"; h1.classList.remove("hidden"); }
+if(sub){ sub.textContent="The Mega Grammar Learning Fest"; sub.classList.remove("hidden"); }
+if(note){ note.textContent="Understand grammar, practise language skills and learn from every answer."; note.classList.remove("hidden"); }
+return;
+}
+if(eb){ eb.textContent=headerTextOverride.eyebrow||""; eb.classList.toggle("hidden",!headerTextOverride.eyebrow); }
+if(h1){ h1.textContent=headerTextOverride.title||""; h1.classList.toggle("hidden",!headerTextOverride.title); }
+if(sub){ sub.textContent=headerTextOverride.subtitle||""; sub.classList.toggle("hidden",!headerTextOverride.subtitle); }
+if(note){ note.textContent=headerTextOverride.note||""; note.classList.toggle("hidden",!headerTextOverride.note); }
 }
 
 db.collection("meta")
@@ -5202,6 +5337,7 @@ db.collection("meta")
 .onSnapshot(
 d=>{
 const data=d.exists?d.data():{};
+headerTextDocExists=d.exists;
 headerTextOverride=data||{};
 renderHeaderTextContent();
 if($("headerTextEyebrow")) $("headerTextEyebrow").value=data.eyebrow||"";
@@ -5274,6 +5410,18 @@ db.collection("meta")
 d=>{
 nudgeIconUrl=d.exists?(d.data().image||""):"";
 renderNudgeIcon();
+},
+e=>{}
+);
+
+
+db.collection("meta")
+.doc("nudgeMessages")
+.onSnapshot(
+d=>{
+const list=d.exists?(d.data().list||[]):[];
+nudgeMessagesOverride=list.length?list:null;
+if($("feedbackWordsInput")) $("feedbackWordsInput").value=list.length?list.join("\n"):"";
 },
 e=>{}
 );
