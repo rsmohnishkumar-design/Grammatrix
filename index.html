@@ -86,16 +86,34 @@ radial-gradient(circle at 86% 35%,rgba(33,183,201,.18),transparent 28%),
 linear-gradient(135deg,#5548e8,#303d72 52%,#18243f)
 }
 
-.hero.has-bg{
-background:
-linear-gradient(180deg,rgba(18,14,48,.62),rgba(14,20,42,.8)),
-var(--hero-bg-img) center/cover no-repeat
+.hero-bg-layer{
+position:absolute;
+inset:0;
+z-index:0;
+background-size:cover;
+background-position:center;
+pointer-events:none
+}
+
+.hero-bg-overlay{
+position:absolute;
+inset:0;
+z-index:0;
+pointer-events:none;
+opacity:0;
+background:linear-gradient(180deg,rgba(18,14,48,.62),rgba(14,20,42,.8));
+transition:opacity .2s
+}
+
+.hero.has-bg .hero-bg-overlay{
+opacity:1
 }
 
 .hero:before,
 .hero:after{
 content:"";
 position:absolute;
+z-index:1;
 border:1px solid rgba(255,255,255,.12);
 border-radius:50%;
 pointer-events:none
@@ -1168,6 +1186,9 @@ img.nudge-avatar{object-fit:cover;border-radius:50%;background:#fff}
 
 <header class="hero">
 
+<div class="hero-bg-layer" id="heroBgLayer" aria-hidden="true"></div>
+<div class="hero-bg-overlay" aria-hidden="true"></div>
+
 <div class="hero-blob b1" aria-hidden="true"></div>
 <div class="hero-blob b2" aria-hidden="true"></div>
 <div class="hero-blob b3" aria-hidden="true"></div>
@@ -1193,13 +1214,13 @@ GRAMMATRIX
 
 <div id="heroText">
 
-<div class="eyebrow">Velammal Annex</div>
+<div class="eyebrow" id="heroEyebrow">Velammal Annex</div>
 
-<h1>Grammatrix</h1>
+<h1 id="heroTitle">Grammatrix</h1>
 
-<p class="subtitle">The Mega Grammar Learning Fest</p>
+<p class="subtitle" id="heroSubtitle">The Mega Grammar Learning Fest</p>
 
-<p class="hero-note">
+<p class="hero-note" id="heroNoteText">
 Understand grammar, practise language skills and learn from every answer.
 </p>
 
@@ -1800,14 +1821,17 @@ class="hidden"
 style="width:180px;height:100px;object-fit:cover;border-radius:14px;margin:8px 0"
 alt="Preview">
 
+<label>Brightness</label>
+<input id="headerBgBrightness" type="range" min="0.4" max="1.6" step="0.05" value="1">
+
 <div class="btn-row">
 
 <button class="btn primary" id="saveHeaderBgBtn">
-Save Background
+Change Image
 </button>
 
 <button class="btn secondary" id="resetHeaderBgBtn">
-Remove Background
+Reset Background
 </button>
 
 </div>
@@ -1881,6 +1905,46 @@ Reset
 </div>
 
 <div id="heroTextStatus" class="status"></div>
+
+</div>
+
+
+<!-- CHANGE HEADER TEXT -->
+
+<div class="admin-card">
+
+<h3>✏️ Change Header Text</h3>
+
+<p class="admin-note">
+Changes the actual wording shown at the top of the home page. Leave a
+field blank to keep the default text.
+</p>
+
+<label>Eyebrow (small line above the title)</label>
+<input id="headerTextEyebrow" placeholder="Velammal Annex">
+
+<label>Title</label>
+<input id="headerTextTitle" placeholder="Grammatrix">
+
+<label>Subtitle</label>
+<input id="headerTextSubtitle" placeholder="The Mega Grammar Learning Fest">
+
+<label>Note (small line under the subtitle)</label>
+<textarea id="headerTextNote" placeholder="Understand grammar, practise language skills and learn from every answer."></textarea>
+
+<div class="btn-row">
+
+<button class="btn primary" id="saveHeaderTextBtn">
+Save Text
+</button>
+
+<button class="btn secondary" id="resetHeaderTextContentBtn">
+Reset to Default
+</button>
+
+</div>
+
+<div id="headerTextContentStatus" class="status"></div>
 
 </div>
 
@@ -2394,6 +2458,8 @@ let nudgeIconUrl="";
 let stagedNudgeIcon="";
 let headerBgUrl="";
 let stagedHeaderBg="";
+let headerBgBrightness=1;
+let headerTextOverride={};
 let heroLogoUrl="";
 let stagedHeroLogo="";
 let nudgeInterval=null;
@@ -3738,14 +3804,33 @@ setStatus("headerBgStatus","Error: "+e.message,"error");
 
 $("resetHeaderBgBtn").onclick=async()=>{
 try{
-await db.collection("meta").doc("headerBg").set({image:""},{merge:true});
+await db.collection("meta").doc("headerBg").set({image:"",brightness:1},{merge:true});
 $("headerBgInput").value="";
 $("headerBgPreview").classList.add("hidden");
 $("headerBgPreview").src="";
+$("headerBgBrightness").value=1;
 stagedHeaderBg="";
-setStatus("headerBgStatus","Background removed ✓","success");
+setStatus("headerBgStatus","Background reset ✓","success");
 }catch(e){
 setStatus("headerBgStatus","Error: "+e.message,"error");
+}
+};
+
+$("headerBgBrightness").oninput=e=>{
+const v=+e.target.value;
+$("heroBgLayer").style.filter="brightness("+v+")";
+};
+
+$("headerBgBrightness").onchange=async e=>{
+const v=+e.target.value;
+try{
+await db.collection("meta").doc("headerBg").set(
+{brightness:v,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+{merge:true}
+);
+setStatus("headerBgStatus","Brightness saved ✓","success");
+}catch(err){
+setStatus("headerBgStatus","Error: "+err.message,"error");
 }
 };
 
@@ -3813,6 +3898,41 @@ await db.collection("meta").doc("flags").set(
 setStatus("heroTextStatus","Header text reset to normal ✓","success");
 }catch(e){
 setStatus("heroTextStatus","Error: "+e.message,"error");
+}
+};
+
+
+$("saveHeaderTextBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("headerText").set(
+{
+eyebrow:$("headerTextEyebrow").value.trim(),
+title:$("headerTextTitle").value.trim(),
+subtitle:$("headerTextSubtitle").value.trim(),
+note:$("headerTextNote").value.trim(),
+updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+},
+{merge:true}
+);
+setStatus("headerTextContentStatus","Header text saved ✓","success");
+}catch(e){
+setStatus("headerTextContentStatus","Error: "+e.message,"error");
+}
+};
+
+$("resetHeaderTextContentBtn").onclick=async()=>{
+try{
+await db.collection("meta").doc("headerText").set(
+{eyebrow:"",title:"",subtitle:"",note:""},
+{merge:true}
+);
+$("headerTextEyebrow").value="";
+$("headerTextTitle").value="";
+$("headerTextSubtitle").value="";
+$("headerTextNote").value="";
+setStatus("headerTextContentStatus","Reset to default text ✓","success");
+}catch(e){
+setStatus("headerTextContentStatus","Error: "+e.message,"error");
 }
 };
 
@@ -5029,13 +5149,16 @@ $("leaderboardArea").innerHTML='<div class="empty">Scores will appear after play
 
 function renderHeaderBg(){
 const hero=document.querySelector(".hero");
-if(!hero) return;
+const layer=$("heroBgLayer");
+if(!hero||!layer) return;
 if(headerBgUrl){
 hero.classList.add("has-bg");
-hero.style.setProperty("--hero-bg-img","url('"+headerBgUrl+"')");
+layer.style.backgroundImage="url('"+headerBgUrl+"')";
+layer.style.filter="brightness("+headerBgBrightness+")";
 }else{
 hero.classList.remove("has-bg");
-hero.style.removeProperty("--hero-bg-img");
+layer.style.backgroundImage="";
+layer.style.filter="";
 }
 }
 
@@ -5056,8 +5179,35 @@ db.collection("meta")
 .doc("headerBg")
 .onSnapshot(
 d=>{
-headerBgUrl=d.exists?(d.data().image||""):"";
+const data=d.exists?d.data():{};
+headerBgUrl=data.image||"";
+headerBgBrightness=typeof data.brightness==="number"?data.brightness:1;
+if($("headerBgBrightness")) $("headerBgBrightness").value=headerBgBrightness;
 renderHeaderBg();
+},
+e=>{}
+);
+
+
+function renderHeaderTextContent(){
+const eb=$("heroEyebrow"),h1=$("heroTitle"),sub=$("heroSubtitle"),note=$("heroNoteText");
+if(eb) eb.textContent=headerTextOverride.eyebrow||"Velammal Annex";
+if(h1) h1.textContent=headerTextOverride.title||"Grammatrix";
+if(sub) sub.textContent=headerTextOverride.subtitle||"The Mega Grammar Learning Fest";
+if(note) note.textContent=headerTextOverride.note||"Understand grammar, practise language skills and learn from every answer.";
+}
+
+db.collection("meta")
+.doc("headerText")
+.onSnapshot(
+d=>{
+const data=d.exists?d.data():{};
+headerTextOverride=data||{};
+renderHeaderTextContent();
+if($("headerTextEyebrow")) $("headerTextEyebrow").value=data.eyebrow||"";
+if($("headerTextTitle")) $("headerTextTitle").value=data.title||"";
+if($("headerTextSubtitle")) $("headerTextSubtitle").value=data.subtitle||"";
+if($("headerTextNote")) $("headerTextNote").value=data.note||"";
 },
 e=>{}
 );
