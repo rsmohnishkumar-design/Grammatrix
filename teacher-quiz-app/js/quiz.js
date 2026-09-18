@@ -1,23 +1,45 @@
 // Shared "choose the correct option" rendering, used by both the student
 // quiz and the teacher's interactive preview in the Hidden Room.
 
+const LETTERS = ["A", "B", "C", "D", "E", "F"];
+
 function renderOptions(container, question, onSelect) {
   container.innerHTML = "";
-  question.options.forEach((opt) => {
+  const mainOptions = question.options.filter((o) => o !== "I don't know");
+
+  mainOptions.forEach((opt, i) => {
     const btn = document.createElement("button");
-    btn.className = "option" + (opt === "I don't know" ? " idk" : "");
-    btn.textContent = opt;
+    btn.className = "option";
+    btn.dataset.value = opt;
+    const badge = document.createElement("span");
+    badge.className = "option-badge";
+    badge.textContent = LETTERS[i] || String(i + 1);
+    btn.appendChild(badge);
+    btn.appendChild(document.createTextNode(opt));
     btn.addEventListener("click", () => onSelect(opt, btn, container));
     container.appendChild(btn);
   });
+
+  const divider = document.createElement("div");
+  divider.className = "idk-divider";
+  divider.textContent = "or";
+  container.appendChild(divider);
+
+  const idkBtn = document.createElement("button");
+  idkBtn.className = "option idk";
+  idkBtn.dataset.value = "I don't know";
+  idkBtn.textContent = "🤷 I don't know";
+  idkBtn.addEventListener("click", () => onSelect("I don't know", idkBtn, container));
+  container.appendChild(idkBtn);
 }
 
 function lockOptions(container, question, chosenBtn) {
   const buttons = Array.from(container.querySelectorAll(".option"));
   buttons.forEach((btn) => {
     btn.disabled = true;
-    if (btn.textContent === question.correctAnswer) btn.classList.add("correct");
+    if (btn.dataset.value === question.correctAnswer) btn.classList.add("correct");
     else if (btn === chosenBtn) btn.classList.add("wrong");
+    else btn.classList.add("dim");
   });
 }
 

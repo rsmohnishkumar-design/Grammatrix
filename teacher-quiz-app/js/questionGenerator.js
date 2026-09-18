@@ -70,8 +70,8 @@ function generateQuestions(text, maxQuestions = 8) {
     const keyword = pickKeyword(sentence, usedWords);
     if (!keyword) continue;
 
-    const distractors = buildDistractors(keyword, allWords, 2);
-    if (distractors.length < 2) continue;
+    const distractors = buildDistractors(keyword, allWords, 3);
+    if (distractors.length < 3) continue;
 
     usedWords.add(keyword.toLowerCase());
 
