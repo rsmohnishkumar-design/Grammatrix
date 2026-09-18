@@ -334,11 +334,38 @@ input[type="text"]:focus{
 
 .option:disabled{cursor:default}
 .option.dim{opacity:.45}
-.option.correct{background:linear-gradient(135deg,var(--greenSoft),#c9f5df)!important;border-color:var(--green)!important;box-shadow:0 8px 18px rgba(34,197,94,.25);opacity:1!important}
+.option.correct{background:linear-gradient(135deg,var(--greenSoft),#c9f5df)!important;border-color:var(--green)!important;box-shadow:0 8px 18px rgba(34,197,94,.25);opacity:1!important;animation:optionPop .35s ease}
 .option.correct .option-badge{background:var(--green)!important}
-.option.wrong{background:linear-gradient(135deg,var(--redSoft),#ffd0da)!important;border-color:var(--red)!important;opacity:1!important}
+.option.wrong{background:linear-gradient(135deg,var(--redSoft),#ffd0da)!important;border-color:var(--red)!important;opacity:1!important;animation:optionShake .4s ease}
 .option.wrong .option-badge{background:var(--red)!important}
 .option.idk{font-style:italic;color:var(--muted);border-style:dashed!important;background:#faf9ff!important;justify-content:center}
+
+@keyframes optionPop{0%{transform:scale(.94)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes optionShake{20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+
+@keyframes questionSlideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+.question-enter .question-text,
+.question-enter .options{animation:questionSlideIn .32s ease}
+.question-enter .options .option{animation:questionSlideIn .32s ease backwards}
+.question-enter .options .option:nth-of-type(1){animation-delay:.03s}
+.question-enter .options .option:nth-of-type(2){animation-delay:.07s}
+.question-enter .options .option:nth-of-type(3){animation-delay:.11s}
+.question-enter .options .option:nth-of-type(4){animation-delay:.15s}
+
+@keyframes resultBounceIn{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
+#studentResultCard{animation:resultBounceIn .4s ease}
+
+.confetti-piece{
+  position:absolute;
+  top:-30px;
+  font-size:1.4rem;
+  pointer-events:none;
+  animation:confettiFall 1.5s ease-in forwards;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(0) rotate(0deg);opacity:1}
+  100%{transform:translateY(320px) rotate(360deg);opacity:.15}
+}
 
 .question-block{
   border:2px solid var(--line);

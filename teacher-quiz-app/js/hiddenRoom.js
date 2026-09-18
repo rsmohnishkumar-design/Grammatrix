@@ -51,17 +51,17 @@ const HiddenRoom = {
   async handleGenerate() {
     const files = Array.from(this.els.photoInput.files || []);
     if (!files.length) {
-      this.setStatus("Add at least one photo first.", "error");
+      this.setStatus("Add at least one photo or PDF first.", "error");
       return;
     }
 
     this.els.generateBtn.disabled = true;
-    this.uploadPhotos(files);
+    this.uploadFiles(files);
 
     try {
-      const text = await extractTextFromImages(files, (msg) => this.setStatus(msg));
+      const text = await extractTextFromFiles(files, (msg) => this.setStatus(msg));
       if (!text || text.trim().length < 20) {
-        this.setStatus("Couldn't read enough text from those photos — try clearer, well-lit photos.", "error");
+        this.setStatus("Couldn't read enough text from that — try a clearer photo or a PDF with more text.", "error");
         return;
       }
 
@@ -76,19 +76,19 @@ const HiddenRoom = {
       this.renderQuestions();
     } catch (err) {
       console.error(err);
-      this.setStatus("Something went wrong reading those photos. Try again.", "error");
+      this.setStatus("Something went wrong reading that file. Try again.", "error");
     } finally {
       this.els.generateBtn.disabled = false;
     }
   },
 
-  async uploadPhotos(files) {
+  async uploadFiles(files) {
     for (const file of files) {
       try {
         const path = `uploads/${Date.now()}_${file.name}`;
         await storage.ref(path).put(file);
       } catch (err) {
-        console.warn("Photo upload failed (question generation still works offline):", err);
+        console.warn("Upload failed (question generation still works offline):", err);
       }
     }
   },

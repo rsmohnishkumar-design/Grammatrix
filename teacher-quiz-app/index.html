@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 
@@ -22,8 +22,8 @@
     </header>
     <div class="live-banner live">🟢 Live now — questions are with your students</div>
     <div class="card step-card step-1">
-      <h2>📸 Upload page photos</h2>
-      <p class="muted">Take photos of the pages you want questions from.</p>
+      <h2>📸 Upload pages</h2>
+      <p class="muted">Take photos, or upload PDFs, of the pages you want questions from.</p>
     </div>
     <div class="card step-card step-2">
       <h2>📝 Questions</h2>
@@ -90,9 +90,9 @@
   <div class="live-banner" id="liveStatusBanner">⚪ No live quiz right now</div>
 
   <div class="card step-card step-1">
-    <h2>📸 Upload page photos</h2>
-    <p class="muted">Take photos (or upload) of the pages you want questions from.</p>
-    <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+    <h2>📸 Upload pages</h2>
+    <p class="muted">Take photos, or upload PDFs, of the pages you want questions from.</p>
+    <input type="file" id="photoInput" accept="image/*,application/pdf" capture="environment" multiple>
     <div class="btn-row">
       <button class="btn primary" id="generateBtn">✨ Extract text &amp; generate questions</button>
     </div>
@@ -152,13 +152,18 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
 
-<script src="js/firebase-config.js?v=3"></script>
-<script src="js/questionGenerator.js?v=3"></script>
-<script src="js/ocr.js?v=3"></script>
-<script src="js/quiz.js?v=3"></script>
-<script src="js/hiddenRoom.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/firebase-config.js?v=4"></script>
+<script src="js/questionGenerator.js?v=4"></script>
+<script src="js/ocr.js?v=4"></script>
+<script src="js/quiz.js?v=4"></script>
+<script src="js/hiddenRoom.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
 
 </body>
 </html>

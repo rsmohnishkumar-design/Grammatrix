@@ -105,6 +105,7 @@ const StudentQuiz = {
     this.els.waiting.classList.remove("hidden");
     this.els.quizCard.classList.add("hidden");
     this.els.resultCard.classList.add("hidden");
+    this.els.resultCard.querySelectorAll(".confetti-piece").forEach((el) => el.remove());
   },
 
   start(questions) {
@@ -133,6 +134,26 @@ const StudentQuiz = {
       this.els.score.textContent = `Score: ${this.score}`;
       this.els.nextBtn.classList.remove("hidden");
     });
+    this.replayEnterAnimation();
+  },
+
+  replayEnterAnimation() {
+    this.els.quizCard.classList.remove("question-enter");
+    void this.els.quizCard.offsetWidth; // force reflow so the animation restarts
+    this.els.quizCard.classList.add("question-enter");
+  },
+
+  spawnConfetti() {
+    const emojis = ["🎉", "✨", "⭐", "🎊"];
+    for (let i = 0; i < 14; i++) {
+      const piece = document.createElement("span");
+      piece.className = "confetti-piece";
+      piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.animationDelay = `${(Math.random() * 0.3).toFixed(2)}s`;
+      piece.addEventListener("animationend", () => piece.remove());
+      this.els.resultCard.appendChild(piece);
+    }
   },
 
   next() {
@@ -150,6 +171,7 @@ const StudentQuiz = {
     this.els.quizCard.classList.add("hidden");
     this.els.resultCard.classList.remove("hidden");
     this.els.resultText.textContent = `You scored ${this.score} out of ${this.questions.length}.`;
+    this.spawnConfetti();
     try {
       await db.collection("scores").add({
         username: current.username || "Unknown",
