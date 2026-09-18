@@ -76,7 +76,7 @@ const HiddenRoom = {
       this.renderQuestions();
     } catch (err) {
       console.error(err);
-      this.setStatus("Something went wrong reading that file. Try again.", "error");
+      this.setStatus(`⚠️ ${err.message || "Something went wrong reading that file."}`, "error");
     } finally {
       this.els.generateBtn.disabled = false;
     }

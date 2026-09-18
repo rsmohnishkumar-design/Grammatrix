@@ -4,21 +4,33 @@
 // back to rendering it as an image and running OCR on that.
 
 async function extractTextFromFiles(files, onProgress) {
+  if (typeof Tesseract === "undefined") {
+    throw new Error("The OCR library didn't load (check your internet connection) — try again");
+  }
+
   let combined = "";
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    if (file.type === "application/pdf") {
-      combined += "\n" + (await extractTextFromPdf(file, i, files.length, onProgress));
-    } else {
-      if (onProgress) onProgress(`Reading photo ${i + 1} of ${files.length}…`);
-      const result = await Tesseract.recognize(file, "eng");
-      combined += "\n" + (result.data.text || "");
+    try {
+      if (file.type === "application/pdf") {
+        combined += "\n" + (await extractTextFromPdf(file, i, files.length, onProgress));
+      } else {
+        if (onProgress) onProgress(`Reading photo ${i + 1} of ${files.length}…`);
+        const result = await Tesseract.recognize(file, "eng");
+        combined += "\n" + (result.data.text || "");
+      }
+    } catch (err) {
+      throw new Error(`Couldn't read "${file.name}": ${err.message || err}`);
     }
   }
   return combined.trim();
 }
 
 async function extractTextFromPdf(file, fileIndex, totalFiles, onProgress) {
+  if (typeof pdfjsLib === "undefined") {
+    throw new Error("The PDF reader didn't load (check your internet connection) — try again");
+  }
+
   const buffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
   let text = "";
