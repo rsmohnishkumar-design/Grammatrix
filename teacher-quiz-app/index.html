@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
@@ -23,7 +23,7 @@
     <div class="live-banner live">🟢 Live now — questions are with your students</div>
     <div class="card step-card step-1">
       <h2>📸 Upload pages</h2>
-      <p class="muted">Take photos, or upload PDFs, of the pages you want questions from.</p>
+      <p class="muted">Take photos, or upload PDFs or notes, of what you want questions from.</p>
     </div>
     <div class="card step-card step-2">
       <h2>📝 Questions</h2>
@@ -91,8 +91,8 @@
 
   <div class="card step-card step-1">
     <h2>📸 Upload pages</h2>
-    <p class="muted">Take photos, or upload PDFs, of the pages you want questions from.</p>
-    <input type="file" id="photoInput" accept="image/*,application/pdf" capture="environment" multiple>
+    <p class="muted">Take photos, or upload PDFs or text/Markdown notes, of what you want questions from.</p>
+    <input type="file" id="photoInput" accept="image/*,application/pdf,text/plain,text/markdown,.md,.markdown,.txt" capture="environment" multiple>
     <div class="btn-row">
       <button class="btn primary" id="generateBtn">✨ Extract text &amp; generate questions</button>
     </div>
@@ -158,12 +158,12 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=5"></script>
-<script src="js/questionGenerator.js?v=5"></script>
-<script src="js/ocr.js?v=5"></script>
-<script src="js/quiz.js?v=5"></script>
-<script src="js/hiddenRoom.js?v=5"></script>
-<script src="js/app.js?v=5"></script>
+<script src="js/firebase-config.js?v=6"></script>
+<script src="js/questionGenerator.js?v=6"></script>
+<script src="js/ocr.js?v=6"></script>
+<script src="js/quiz.js?v=6"></script>
+<script src="js/hiddenRoom.js?v=6"></script>
+<script src="js/app.js?v=6"></script>
 
 </body>
 </html>

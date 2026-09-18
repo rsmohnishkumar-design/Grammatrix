@@ -1,25 +1,54 @@
 // Client-side text extraction — no server or API key needed.
-// Images go through Tesseract.js OCR. PDFs use pdf.js: real text-layer pages
-// extract instantly, and any page with no text layer (a scanned page) falls
-// back to rendering it as an image and running OCR on that.
+// Plain text/Markdown files are read directly (fastest, most accurate — no
+// OCR needed). Images go through Tesseract.js OCR. PDFs use pdf.js:
+// real text-layer pages extract instantly, and any page with no text
+// layer (a scanned page) falls back to rendering it as an image and
+// running OCR on that.
+
+function isTextFile(file) {
+  if (file.type.startsWith("text/")) return true;
+  return /\.(md|markdown|txt)$/i.test(file.name);
+}
+
+function stripMarkdown(text) {
+  return text
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]*)`/g, "$1")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\|/g, " ")
+    .replace(/^[-*_]{3,}\s*$/gm, " ")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .trim();
+}
 
 async function extractTextFromFiles(files, onProgress) {
-  if (typeof Tesseract === "undefined") {
-    throw new Error("The OCR library didn't load (check your internet connection) — try again");
-  }
-
   let combined = "";
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     try {
-      if (file.type === "application/pdf") {
+      if (isTextFile(file)) {
+        if (onProgress) onProgress(`Reading ${file.name}…`);
+        combined += "\n" + stripMarkdown(await file.text());
+      } else if (file.type === "application/pdf") {
         combined += "\n" + (await extractTextFromPdf(file, i, files.length, onProgress));
-      } else {
+      } else if (file.type.startsWith("image/")) {
+        if (typeof Tesseract === "undefined") {
+          throw new Error("The OCR library didn't load (check your internet connection) — try again");
+        }
         if (onProgress) onProgress(`Reading photo ${i + 1} of ${files.length}…`);
         const result = await Tesseract.recognize(file, "eng");
         combined += "\n" + (result.data.text || "");
+      } else {
+        throw new Error(`"${file.name}" isn't a photo, PDF, or text/Markdown file — that type isn't supported.`);
       }
     } catch (err) {
+      if (err.message && err.message.startsWith(`"${file.name}"`)) throw err;
       throw new Error(`Couldn't read "${file.name}": ${err.message || err}`);
     }
   }
