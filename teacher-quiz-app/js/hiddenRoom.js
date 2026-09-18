@@ -38,9 +38,30 @@ const HiddenRoom = {
     this.els.manualAddBtn.addEventListener("click", () => this.addManualQuestion());
     this.els.manualCancelBtn.addEventListener("click", () => this.hideManualForm());
 
+    this.loadDraft();
     this.renderQuestions();
     this.listenScoreboard();
     this.listenLiveStatus();
+  },
+
+  // Questions live only in memory otherwise — a page refresh (or the
+  // browser tab closing) would silently wipe out everything a teacher
+  // built, even while a quiz they already sent is still live for students.
+  loadDraft() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("tq_hiddenroom_draft") || "[]");
+      if (Array.isArray(saved)) this.questions = saved;
+    } catch (err) {
+      console.warn("Could not restore saved questions:", err);
+    }
+  },
+
+  saveDraft() {
+    try {
+      localStorage.setItem("tq_hiddenroom_draft", JSON.stringify(this.questions));
+    } catch (err) {
+      console.warn("Could not save questions draft:", err);
+    }
   },
 
   setStatus(msg, kind) {
@@ -72,6 +93,7 @@ const HiddenRoom = {
       }
 
       this.questions = this.questions.concat(newQuestions);
+      this.saveDraft();
       this.setStatus(`Added ${newQuestions.length} questions (${this.questions.length} total).`, "success");
       this.renderQuestions();
     } catch (err) {
@@ -119,6 +141,7 @@ const HiddenRoom = {
     options.push("I don't know");
 
     this.questions.push({ questionText, options, correctAnswer: correct });
+    this.saveDraft();
     this.renderQuestions();
 
     this.els.manualStatus.textContent = "Question added.";
@@ -155,6 +178,7 @@ const HiddenRoom = {
         `;
         block.querySelector(".remove-q").addEventListener("click", () => {
           this.questions.splice(i, 1);
+          this.saveDraft();
           this.renderQuestions();
         });
         area.appendChild(block);
