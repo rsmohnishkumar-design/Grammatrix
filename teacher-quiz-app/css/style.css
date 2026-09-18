@@ -219,12 +219,18 @@ h1,h2,h3{
 .input-wrap{position:relative;margin-bottom:12px}
 .input-wrap .input-icon{
   position:absolute;
-  left:14px;top:50%;
+  left:13px;top:50%;
   transform:translateY(-50%);
+  width:18px;height:18px;
   font-size:1rem;
+  line-height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
   pointer-events:none;
 }
-.input-wrap input{padding-left:42px;margin-bottom:0}
+.input-wrap input{padding-left:46px !important;margin-bottom:0}
 
 .login-button{width:100%;justify-content:center;font-size:1rem}
 .login-button span{display:inline-block;transition:transform .15s}
