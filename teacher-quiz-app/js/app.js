@@ -30,6 +30,10 @@ function routeTo(user) {
   } else {
     document.getElementById("studentGreeting").textContent = `Hi, ${user.username}`;
     showView("student");
+    // StudentQuiz.init() ran at page load, before any username was known,
+    // so its first showHome() couldn't load this user's past scores yet —
+    // refresh it now that we actually know who's logged in.
+    StudentQuiz.showHome();
   }
 }
 
