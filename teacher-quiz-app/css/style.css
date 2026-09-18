@@ -22,6 +22,17 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 
+html{
+  min-height:100%;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(124,58,237,.20), transparent 32%),
+    radial-gradient(circle at 92% 18%, rgba(236,72,153,.18), transparent 30%),
+    radial-gradient(circle at 15% 85%, rgba(20,184,166,.16), transparent 34%),
+    radial-gradient(circle at 90% 90%, rgba(250,204,21,.16), transparent 28%),
+    linear-gradient(160deg,#f6f2ff 0%,#eef5ff 45%,#fff0fa 100%);
+  background-attachment:fixed;
+}
+
 body{
   font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color:var(--ink);
@@ -30,13 +41,9 @@ body{
   max-width:640px;
   margin:0 auto;
   min-height:100vh;
-  background:
-    radial-gradient(circle at 8% 8%, rgba(124,58,237,.20), transparent 32%),
-    radial-gradient(circle at 92% 18%, rgba(236,72,153,.18), transparent 30%),
-    radial-gradient(circle at 15% 85%, rgba(20,184,166,.16), transparent 34%),
-    radial-gradient(circle at 90% 90%, rgba(250,204,21,.16), transparent 28%),
-    linear-gradient(160deg,#f6f2ff 0%,#eef5ff 45%,#fff0fa 100%);
-  background-attachment:fixed;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
 h1,h2,h3{
@@ -99,9 +106,9 @@ h1,h2,h3{
 }
 
 .login-card{
-  margin-top:30px;
   text-align:center;
   padding:32px 24px;
+  box-shadow:0 30px 90px rgba(43,26,74,.22);
 }
 
 .login-icon{
