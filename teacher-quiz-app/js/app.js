@@ -9,6 +9,7 @@ const views = {
 function showView(name) {
   Object.values(views).forEach((v) => v.classList.add("hidden"));
   views[name].classList.remove("hidden");
+  document.getElementById("appBackdrop").classList.toggle("hidden", name !== "login");
 }
 
 async function recordLogin(username, role) {

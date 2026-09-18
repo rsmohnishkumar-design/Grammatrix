@@ -12,6 +12,30 @@
 </head>
 <body>
 
+<!-- Decorative, non-interactive preview of the app shown blurred behind
+     the login modal. Purely cosmetic — no ids, never receives input. -->
+<div class="app-backdrop" id="appBackdrop" aria-hidden="true">
+  <div class="backdrop-inner">
+    <header class="topbar">
+      <span class="chip chip-teacher">🔒 Hidden Room</span>
+      <span class="btn ghost">Log out</span>
+    </header>
+    <div class="live-banner live">🟢 Live now — questions are with your students</div>
+    <div class="card step-card step-1">
+      <h2>📸 Upload page photos</h2>
+      <p class="muted">Take photos of the pages you want questions from.</p>
+    </div>
+    <div class="card step-card step-2">
+      <h2>📝 Questions</h2>
+      <p class="muted">Review, edit and send questions to your class.</p>
+    </div>
+    <div class="card step-card step-3">
+      <h2>🧑‍🎓 Who's logged in &amp; scores</h2>
+      <p class="muted">See every login and score live.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ============ LOGIN ============ -->
 <section class="view" id="loginView">
   <div class="card login-card">

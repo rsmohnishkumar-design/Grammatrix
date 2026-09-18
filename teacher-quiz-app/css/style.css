@@ -56,6 +56,36 @@ h1,h2,h3{
 .view{display:block;animation:fadeUp .35s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+.app-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  padding:18px;
+  max-width:640px;
+  margin:0 auto;
+  filter:blur(9px) saturate(1.15);
+  opacity:.65;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.app-backdrop.hidden{display:none!important}
+
+/* Login sits as a true modal over the (blurred) app-backdrop, matching
+   the app's own profile-modal pattern: dark scrim + crisp centered card. */
+#loginView{
+  position:fixed;
+  inset:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(24,15,48,.45);
+}
+
+#loginView .login-card{max-width:460px;width:100%}
+
 .card{
   background:var(--surface);
   border:1px solid var(--line);
