@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#7c3aed">
-<title>Teacher's Hidden Room</title>
+<meta name="theme-color" content="#16a34a">
+<title>Testify</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%85%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -39,8 +40,8 @@
 <!-- ============ LOGIN ============ -->
 <section class="view" id="loginView">
   <div class="card login-card">
-    <div class="login-icon">📚</div>
-    <h1>Class Quiz</h1>
+    <div class="login-icon">✅</div>
+    <h1>Testify</h1>
     <p class="muted">Enter your name to join. Teachers, enter your room code instead.</p>
     <form id="loginForm">
       <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
@@ -57,26 +58,58 @@
     <button class="btn ghost" id="studentLogout">Log out</button>
   </header>
 
-  <div class="card" id="studentWaiting">
-    <p>⏳ Waiting for your teacher to send a quiz…</p>
+  <!-- Home: shown whenever the student isn't actively taking or reviewing a test -->
+  <div id="studentHome">
+    <div class="card available-card hidden" id="availableCard">
+      <h2>🟢 A new test is available!</h2>
+      <p id="availableCount"></p>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn primary" id="startTestBtn">Start Test</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="noTestCard">
+      <p>⏳ No test available right now.</p>
+    </div>
+
+    <div class="card">
+      <h2>📋 Test attended</h2>
+      <div id="attendedList" class="attended-list">
+        <p class="muted">You haven't attended any tests yet.</p>
+      </div>
+    </div>
   </div>
 
+  <!-- Test-taking -->
   <div class="card hidden" id="studentQuizCard">
     <div class="progress-row">
       <span id="qProgress"></span>
-      <span id="qScore"></span>
     </div>
     <p class="question-text" id="qText"></p>
     <div class="options" id="qOptions"></div>
     <div class="btn-row">
-      <button class="btn primary hidden" id="qNextBtn">Next</button>
+      <button class="btn ghost hidden" id="qPrevBtn">← Back</button>
+      <button class="btn primary" id="qNextBtn">Next</button>
     </div>
   </div>
 
+  <!-- Review before submitting -->
+  <div class="card hidden" id="studentReviewCard">
+    <h2>📝 Review your answers</h2>
+    <p class="muted">Check everything below — you can still change any answer before you submit.</p>
+    <div id="reviewArea"></div>
+    <div class="btn-row">
+      <button class="btn primary" id="submitTestBtn">✅ Submit Test</button>
+    </div>
+    <div id="submitStatus" class="status"></div>
+  </div>
+
+  <!-- Results after submitting -->
   <div class="card hidden" id="studentResultCard">
-    <h2>🎉 Quiz finished!</h2>
+    <h2>✅ Test submitted!</h2>
     <p id="resultText"></p>
-    <button class="btn secondary" id="resultOkBtn">OK</button>
+    <div id="resultsArea"></div>
+    <button class="btn secondary" id="checkedBtn">Checked</button>
   </div>
 </section>
 
@@ -87,7 +120,7 @@
     <button class="btn ghost" id="teacherLogout">Log out</button>
   </header>
 
-  <div class="live-banner" id="liveStatusBanner">⚪ No live quiz right now</div>
+  <div class="live-banner" id="liveStatusBanner">⚪ No live test right now</div>
 
   <div class="card step-card step-1">
     <h2>📸 Upload pages</h2>
@@ -128,7 +161,8 @@
 
     <div class="btn-row">
       <button class="btn primary" id="sendBtn">🚀 Send to children</button>
-      <button class="btn danger" id="clearLiveBtn">❌ Stop live quiz</button>
+      <button class="btn danger" id="clearLiveBtn">❌ Stop live test</button>
+      <button class="btn warning" id="resetQuestionsBtn">🔄 Reset questions</button>
     </div>
     <div id="sendStatus" class="status"></div>
   </div>
@@ -158,12 +192,12 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=7"></script>
-<script src="js/questionGenerator.js?v=7"></script>
-<script src="js/ocr.js?v=7"></script>
-<script src="js/quiz.js?v=7"></script>
-<script src="js/hiddenRoom.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/firebase-config.js?v=8"></script>
+<script src="js/questionGenerator.js?v=8"></script>
+<script src="js/ocr.js?v=8"></script>
+<script src="js/quiz.js?v=8"></script>
+<script src="js/hiddenRoom.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
 
 </body>
 </html>

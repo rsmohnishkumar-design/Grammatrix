@@ -13,6 +13,7 @@ const HiddenRoom = {
       modeInteractiveBtn: document.getElementById("modeInteractiveBtn"),
       sendBtn: document.getElementById("sendBtn"),
       clearLiveBtn: document.getElementById("clearLiveBtn"),
+      resetQuestionsBtn: document.getElementById("resetQuestionsBtn"),
       sendStatus: document.getElementById("sendStatus"),
       loginsTable: document.getElementById("loginsTable"),
       scoresTable: document.getElementById("scoresTable"),
@@ -34,6 +35,7 @@ const HiddenRoom = {
     this.els.modeInteractiveBtn.addEventListener("click", () => this.setMode("interactive"));
     this.els.sendBtn.addEventListener("click", () => this.sendToChildren());
     this.els.clearLiveBtn.addEventListener("click", () => this.clearLiveQuiz());
+    this.els.resetQuestionsBtn.addEventListener("click", () => this.resetQuestions());
     this.els.addManualBtn.addEventListener("click", () => this.toggleManualForm());
     this.els.manualAddBtn.addEventListener("click", () => this.addManualQuestion());
     this.els.manualCancelBtn.addEventListener("click", () => this.hideManualForm());
@@ -62,6 +64,21 @@ const HiddenRoom = {
     } catch (err) {
       console.warn("Could not save questions draft:", err);
     }
+  },
+
+  resetQuestions() {
+    if (this.questions.length && !window.confirm(`Remove all ${this.questions.length} question(s)? This can't be undone.`)) {
+      return;
+    }
+    this.questions = [];
+    this.saveDraft();
+    this.renderQuestions();
+    this.els.photoInput.value = "";
+    this.hideManualForm();
+    this.els.ocrStatus.textContent = "";
+    this.els.ocrStatus.className = "status";
+    this.els.sendStatus.textContent = "Questions reset.";
+    this.els.sendStatus.className = "status";
   },
 
   setStatus(msg, kind) {
@@ -226,11 +243,11 @@ const HiddenRoom = {
     this.els.clearLiveBtn.disabled = true;
     try {
       await db.collection("quiz").doc("current").delete();
-      this.els.sendStatus.textContent = "Live quiz stopped — students will stop seeing it.";
+      this.els.sendStatus.textContent = "Live test stopped — students will stop seeing it.";
       this.els.sendStatus.className = "status";
     } catch (err) {
       console.error(err);
-      this.els.sendStatus.textContent = "Could not stop the quiz — check your Firebase setup.";
+      this.els.sendStatus.textContent = "Could not stop the test — check your Firebase setup.";
       this.els.sendStatus.className = "status error";
     } finally {
       this.els.clearLiveBtn.disabled = false;
@@ -245,7 +262,7 @@ const HiddenRoom = {
           banner.textContent = `🟢 Live now — ${doc.data().questions.length} questions are with your students`;
           banner.className = "live-banner live";
         } else {
-          banner.textContent = "⚪ No live quiz right now";
+          banner.textContent = "⚪ No live test right now";
           banner.className = "live-banner";
         }
       },
@@ -283,9 +300,3 @@ const HiddenRoom = {
     });
   },
 };
-
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
