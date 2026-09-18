@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#18243f">
+<title>Teacher's Hidden Room</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section class="view" id="loginView">
+  <div class="card login-card">
+    <h1>📚 Class Quiz</h1>
+    <p class="muted">Enter your name to join. Teacher? Enter the room code instead.</p>
+    <form id="loginForm">
+      <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
+      <button type="submit" class="btn primary">Continue</button>
+    </form>
+    <div id="loginStatus" class="status"></div>
+  </div>
+</section>
+
+<!-- ============ STUDENT VIEW ============ -->
+<section class="view hidden" id="studentView">
+  <header class="topbar">
+    <strong id="studentGreeting"></strong>
+    <button class="btn ghost" id="studentLogout">Log out</button>
+  </header>
+
+  <div class="card" id="studentWaiting">
+    <p>⏳ Waiting for your teacher to send a quiz…</p>
+  </div>
+
+  <div class="card hidden" id="studentQuizCard">
+    <div class="progress-row">
+      <span id="qProgress"></span>
+      <span id="qScore"></span>
+    </div>
+    <p class="question-text" id="qText"></p>
+    <div class="options" id="qOptions"></div>
+    <div class="btn-row">
+      <button class="btn primary hidden" id="qNextBtn">Next</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="studentResultCard">
+    <h2>🎉 Quiz finished!</h2>
+    <p id="resultText"></p>
+    <button class="btn secondary" id="resultOkBtn">OK</button>
+  </div>
+</section>
+
+<!-- ============ HIDDEN ROOM (TEACHER) ============ -->
+<section class="view hidden" id="hiddenRoomView">
+  <header class="topbar">
+    <strong>🔒 Hidden Room</strong>
+    <button class="btn ghost" id="teacherLogout">Log out</button>
+  </header>
+
+  <div class="card">
+    <h2>1. Upload page photos</h2>
+    <p class="muted">Take photos (or upload) of the pages you want questions from.</p>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+    <div class="btn-row">
+      <button class="btn primary" id="generateBtn">Extract text &amp; generate questions</button>
+    </div>
+    <div id="ocrStatus" class="status"></div>
+  </div>
+
+  <div class="card hidden" id="questionsCard">
+    <h2>2. Review questions</h2>
+    <div class="btn-row" id="viewModeToggle">
+      <button class="btn secondary active" id="modeListBtn">Just questions</button>
+      <button class="btn secondary" id="modeInteractiveBtn">Interactive preview</button>
+    </div>
+    <div id="questionsArea"></div>
+    <div class="btn-row">
+      <button class="btn primary" id="sendBtn">📤 Send to children</button>
+      <button class="btn danger" id="clearLiveBtn">Stop live quiz</button>
+    </div>
+    <div id="sendStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Who's logged in &amp; scores</h2>
+    <div class="two-col">
+      <div>
+        <h3>Logins</h3>
+        <div id="loginsTable" class="mini-table">Loading…</div>
+      </div>
+      <div>
+        <h3>Scores</h3>
+        <div id="scoresTable" class="mini-table">No scores yet.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/questionGenerator.js"></script>
+<script src="js/ocr.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/hiddenRoom.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
