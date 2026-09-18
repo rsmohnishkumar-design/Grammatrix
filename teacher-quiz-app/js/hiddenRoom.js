@@ -8,7 +8,6 @@ const HiddenRoom = {
       photoInput: document.getElementById("photoInput"),
       generateBtn: document.getElementById("generateBtn"),
       ocrStatus: document.getElementById("ocrStatus"),
-      questionsCard: document.getElementById("questionsCard"),
       questionsArea: document.getElementById("questionsArea"),
       modeListBtn: document.getElementById("modeListBtn"),
       modeInteractiveBtn: document.getElementById("modeInteractiveBtn"),
@@ -17,6 +16,17 @@ const HiddenRoom = {
       sendStatus: document.getElementById("sendStatus"),
       loginsTable: document.getElementById("loginsTable"),
       scoresTable: document.getElementById("scoresTable"),
+      liveStatusBanner: document.getElementById("liveStatusBanner"),
+      addManualBtn: document.getElementById("addManualBtn"),
+      manualForm: document.getElementById("manualForm"),
+      manualQuestion: document.getElementById("manualQuestion"),
+      manualCorrect: document.getElementById("manualCorrect"),
+      manualWrong1: document.getElementById("manualWrong1"),
+      manualWrong2: document.getElementById("manualWrong2"),
+      manualWrong3: document.getElementById("manualWrong3"),
+      manualAddBtn: document.getElementById("manualAddBtn"),
+      manualCancelBtn: document.getElementById("manualCancelBtn"),
+      manualStatus: document.getElementById("manualStatus"),
     };
 
     this.els.generateBtn.addEventListener("click", () => this.handleGenerate());
@@ -24,8 +34,13 @@ const HiddenRoom = {
     this.els.modeInteractiveBtn.addEventListener("click", () => this.setMode("interactive"));
     this.els.sendBtn.addEventListener("click", () => this.sendToChildren());
     this.els.clearLiveBtn.addEventListener("click", () => this.clearLiveQuiz());
+    this.els.addManualBtn.addEventListener("click", () => this.toggleManualForm());
+    this.els.manualAddBtn.addEventListener("click", () => this.addManualQuestion());
+    this.els.manualCancelBtn.addEventListener("click", () => this.hideManualForm());
 
+    this.renderQuestions();
     this.listenScoreboard();
+    this.listenLiveStatus();
   },
 
   setStatus(msg, kind) {
@@ -50,14 +65,14 @@ const HiddenRoom = {
         return;
       }
 
-      this.questions = generateQuestions(text);
-      if (!this.questions.length) {
+      const newQuestions = generateQuestions(text);
+      if (!newQuestions.length) {
         this.setStatus("Couldn't build questions from that text — try a page with fuller sentences.", "error");
         return;
       }
 
-      this.setStatus(`Generated ${this.questions.length} questions.`, "success");
-      this.els.questionsCard.classList.remove("hidden");
+      this.questions = this.questions.concat(newQuestions);
+      this.setStatus(`Added ${newQuestions.length} questions (${this.questions.length} total).`, "success");
       this.renderQuestions();
     } catch (err) {
       console.error(err);
@@ -78,6 +93,41 @@ const HiddenRoom = {
     }
   },
 
+  toggleManualForm() {
+    this.els.manualForm.classList.toggle("hidden");
+  },
+
+  hideManualForm() {
+    this.els.manualForm.classList.add("hidden");
+    this.els.manualStatus.textContent = "";
+    [this.els.manualQuestion, this.els.manualCorrect, this.els.manualWrong1, this.els.manualWrong2, this.els.manualWrong3]
+      .forEach((el) => (el.value = ""));
+  },
+
+  addManualQuestion() {
+    const questionText = this.els.manualQuestion.value.trim();
+    const correct = this.els.manualCorrect.value.trim();
+    const wrongs = [this.els.manualWrong1.value.trim(), this.els.manualWrong2.value.trim(), this.els.manualWrong3.value.trim()];
+
+    if (!questionText || !correct || wrongs.some((w) => !w)) {
+      this.els.manualStatus.textContent = "Fill in the question, the correct answer, and all 3 wrong options.";
+      this.els.manualStatus.className = "status error";
+      return;
+    }
+
+    const options = shuffle([correct, ...wrongs]);
+    options.push("I don't know");
+
+    this.questions.push({ questionText, options, correctAnswer: correct });
+    this.renderQuestions();
+
+    this.els.manualStatus.textContent = "Question added.";
+    this.els.manualStatus.className = "status success";
+    [this.els.manualQuestion, this.els.manualCorrect, this.els.manualWrong1, this.els.manualWrong2, this.els.manualWrong3]
+      .forEach((el) => (el.value = ""));
+    this.els.manualQuestion.focus();
+  },
+
   setMode(mode) {
     this.mode = mode;
     this.els.modeListBtn.classList.toggle("active", mode === "list");
@@ -90,7 +140,7 @@ const HiddenRoom = {
     area.innerHTML = "";
 
     if (!this.questions.length) {
-      area.innerHTML = '<p class="muted">No questions yet.</p>';
+      area.innerHTML = '<p class="muted">No questions yet — generate some from photos above, or add one below.</p>';
       return;
     }
 
@@ -126,32 +176,61 @@ const HiddenRoom = {
 
   async sendToChildren() {
     if (!this.questions.length) {
-      this.els.sendStatus.textContent = "Generate questions first.";
+      this.els.sendStatus.textContent = "Add or generate at least one question first.";
       this.els.sendStatus.className = "status error";
       return;
     }
+    this.els.sendBtn.disabled = true;
     try {
       await db.collection("quiz").doc("current").set({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         questions: this.questions,
         sentAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
-      this.els.sendStatus.textContent = "Sent! Students will see it now.";
+      this.els.sendStatus.textContent = `Sent ${this.questions.length} questions! Students will see it now.`;
       this.els.sendStatus.className = "status success";
     } catch (err) {
       console.error(err);
       this.els.sendStatus.textContent = "Could not send — check your Firebase setup.";
       this.els.sendStatus.className = "status error";
+    } finally {
+      this.els.sendBtn.disabled = false;
     }
   },
 
   async clearLiveQuiz() {
+    this.els.clearLiveBtn.disabled = true;
     try {
       await db.collection("quiz").doc("current").delete();
-      this.els.sendStatus.textContent = "Live quiz stopped.";
+      this.els.sendStatus.textContent = "Live quiz stopped — students will stop seeing it.";
       this.els.sendStatus.className = "status";
     } catch (err) {
       console.error(err);
+      this.els.sendStatus.textContent = "Could not stop the quiz — check your Firebase setup.";
+      this.els.sendStatus.className = "status error";
+    } finally {
+      this.els.clearLiveBtn.disabled = false;
     }
+  },
+
+  listenLiveStatus() {
+    db.collection("quiz").doc("current").onSnapshot(
+      (doc) => {
+        const banner = this.els.liveStatusBanner;
+        if (doc.exists && Array.isArray(doc.data().questions) && doc.data().questions.length) {
+          banner.textContent = `🟢 Live now — ${doc.data().questions.length} questions are with your students`;
+          banner.className = "live-banner live";
+        } else {
+          banner.textContent = "⚪ No live quiz right now";
+          banner.className = "live-banner";
+        }
+      },
+      (err) => {
+        console.error(err);
+        this.els.liveStatusBanner.textContent = "⚠️ Could not check live status — check your Firebase setup.";
+        this.els.liveStatusBanner.className = "live-banner error";
+      }
+    );
   },
 
   listenScoreboard() {

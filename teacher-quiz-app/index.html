@@ -17,13 +17,12 @@
   <div class="card login-card">
     <div class="login-icon">📚</div>
     <h1>Class Quiz</h1>
-    <p class="muted">Enter your name to join. Teacher? Enter the room code instead.</p>
+    <p class="muted">Enter your name to join. Teachers, enter your room code instead.</p>
     <form id="loginForm">
       <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
       <button type="submit" class="btn primary">Continue →</button>
     </form>
     <div id="loginStatus" class="status"></div>
-    <div class="hint-chip">🔑 Teachers: type <strong>4456</strong> to open the Hidden Room</div>
   </div>
 </section>
 
@@ -64,8 +63,10 @@
     <button class="btn ghost" id="teacherLogout">Log out</button>
   </header>
 
+  <div class="live-banner" id="liveStatusBanner">⚪ No live quiz right now</div>
+
   <div class="card step-card step-1">
-    <h2><span class="step-badge">1</span>Upload page photos</h2>
+    <h2>📸 Upload page photos</h2>
     <p class="muted">Take photos (or upload) of the pages you want questions from.</p>
     <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
     <div class="btn-row">
@@ -74,13 +75,33 @@
     <div id="ocrStatus" class="status"></div>
   </div>
 
-  <div class="card hidden step-card step-2" id="questionsCard">
-    <h2><span class="step-badge">2</span>Review questions</h2>
+  <div class="card step-card step-2" id="questionsCard">
+    <h2>📝 Questions</h2>
     <div class="btn-row" id="viewModeToggle">
       <button class="btn secondary active" id="modeListBtn">📋 Just questions</button>
       <button class="btn secondary" id="modeInteractiveBtn">🎮 Interactive preview</button>
     </div>
-    <div id="questionsArea"></div>
+    <div id="questionsArea"><p class="muted">No questions yet — generate some from photos above, or add one below.</p></div>
+
+    <button class="btn secondary" id="addManualBtn">➕ Add a question manually</button>
+    <div class="manual-form hidden" id="manualForm">
+      <label class="field-label">Question</label>
+      <input id="manualQuestion" placeholder="e.g. What force keeps planets in orbit?">
+      <label class="field-label">Correct answer</label>
+      <input id="manualCorrect" placeholder="e.g. Gravity">
+      <label class="field-label">Wrong option</label>
+      <input id="manualWrong1" placeholder="e.g. Magnetism">
+      <label class="field-label">Wrong option</label>
+      <input id="manualWrong2" placeholder="e.g. Friction">
+      <label class="field-label">Wrong option</label>
+      <input id="manualWrong3" placeholder="e.g. Momentum">
+      <div class="btn-row">
+        <button class="btn primary" id="manualAddBtn">Add question</button>
+        <button class="btn ghost" id="manualCancelBtn">Cancel</button>
+      </div>
+      <div id="manualStatus" class="status"></div>
+    </div>
+
     <div class="btn-row">
       <button class="btn primary" id="sendBtn">📤 Send to children</button>
       <button class="btn danger" id="clearLiveBtn">🛑 Stop live quiz</button>
@@ -89,7 +110,7 @@
   </div>
 
   <div class="card step-card step-3">
-    <h2><span class="step-badge">3</span>Who's logged in &amp; scores</h2>
+    <h2>🧑‍🎓 Who's logged in &amp; scores</h2>
     <div class="two-col">
       <div>
         <h3>🧑‍🎓 Logins</h3>

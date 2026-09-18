@@ -72,19 +72,30 @@ h1,h2,h3{
 .step-2:before{background:linear-gradient(90deg,var(--purple),var(--pink))}
 .step-3:before{background:linear-gradient(90deg,var(--orange),var(--yellow))}
 
-.step-badge{
-  display:inline-flex;
+.live-banner{
+  display:flex;
   align-items:center;
-  justify-content:center;
-  width:30px;height:30px;
-  border-radius:50%;
-  background:linear-gradient(135deg,var(--purple),var(--pink));
-  color:#fff;
-  font-family:"Fredoka",sans-serif;
-  font-size:.95rem;
-  margin-right:9px;
-  vertical-align:middle;
-  box-shadow:0 6px 14px rgba(124,58,237,.35);
+  gap:8px;
+  padding:12px 16px;
+  border-radius:14px;
+  font-weight:800;
+  font-size:.9rem;
+  margin-bottom:16px;
+  background:#f1ecff;
+  color:var(--muted);
+  border:2px solid var(--line);
+}
+
+.live-banner.live{
+  background:linear-gradient(135deg,var(--greenSoft),#c9f5df);
+  color:#0f5f3d;
+  border-color:var(--green);
+}
+
+.live-banner.error{
+  background:var(--redSoft);
+  color:#9a2340;
+  border-color:var(--red);
 }
 
 .login-card{
@@ -113,17 +124,6 @@ h1,h2,h3{
 }
 
 .muted{color:var(--muted);font-size:.9rem;margin-bottom:14px}
-
-.hint-chip{
-  margin-top:16px;
-  font-size:.8rem;
-  color:#7a4b00;
-  background:linear-gradient(90deg,#fff4d6,#ffe4b3);
-  border:1px solid #f3d38a;
-  border-radius:999px;
-  padding:9px 14px;
-  display:inline-block;
-}
 
 input[type="text"],
 input:not([type]),
@@ -332,6 +332,24 @@ input[type="text"]:focus{
   width:26px;height:26px;
   border-radius:50%;
 }
+
+.manual-form{
+  border:2px dashed var(--line);
+  border-radius:16px;
+  padding:16px;
+  margin:12px 0;
+  background:#fbfaff;
+}
+
+.field-label{
+  display:block;
+  font-size:.76rem;
+  font-weight:800;
+  color:var(--muted);
+  margin:10px 0 4px;
+}
+
+.field-label:first-child{margin-top:0}
 
 .two-col{display:grid;grid-template-columns:1fr;gap:16px}
 @media(min-width:520px){.two-col{grid-template-columns:1fr 1fr}}

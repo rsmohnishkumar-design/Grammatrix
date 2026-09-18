@@ -50,6 +50,8 @@ const StudentQuiz = {
   index: 0,
   score: 0,
   answered: false,
+  state: "waiting", // "waiting" | "answering" | "finished"
+  lastQuizId: null,
 
   els: {},
 
@@ -69,15 +71,32 @@ const StudentQuiz = {
 
     this.els.nextBtn.addEventListener("click", () => this.next());
     this.els.okBtn.addEventListener("click", () => {
-      this.els.resultCard.classList.add("hidden");
-      this.els.waiting.classList.remove("hidden");
+      this.state = "waiting";
+      this.showWaiting();
     });
 
     db.collection("quiz").doc("current").onSnapshot((doc) => {
-      if (doc.exists && Array.isArray(doc.data().questions) && doc.data().questions.length) {
-        this.start(doc.data().questions);
-      } else {
+      const hasQuiz = doc.exists && Array.isArray(doc.data().questions) && doc.data().questions.length;
+
+      if (hasQuiz) {
+        const data = doc.data();
+        const quizId = data.id || JSON.stringify(data.questions);
+        // A genuinely new quiz always takes over, even mid-answer.
+        // The same quiz re-notifying (e.g. a Firestore reconnect) should
+        // never interrupt a question in progress or a just-finished result.
+        if (quizId !== this.lastQuizId) {
+          this.lastQuizId = quizId;
+          this.start(data.questions);
+        }
+      } else if (this.state !== "finished") {
+        // The teacher stopped the quiz. Don't yank someone off their
+        // results screen — only snap back to waiting if they weren't
+        // already looking at a finished result.
+        this.lastQuizId = null;
+        this.state = "waiting";
         this.showWaiting();
+      } else {
+        this.lastQuizId = null;
       }
     });
   },
@@ -92,6 +111,7 @@ const StudentQuiz = {
     this.questions = questions;
     this.index = 0;
     this.score = 0;
+    this.state = "answering";
     this.els.waiting.classList.add("hidden");
     this.els.resultCard.classList.add("hidden");
     this.els.quizCard.classList.remove("hidden");
@@ -126,6 +146,7 @@ const StudentQuiz = {
 
   async finish() {
     const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    this.state = "finished";
     this.els.quizCard.classList.add("hidden");
     this.els.resultCard.classList.remove("hidden");
     this.els.resultText.textContent = `You scored ${this.score} out of ${this.questions.length}.`;
