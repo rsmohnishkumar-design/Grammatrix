@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#18243f">
+<meta name="theme-color" content="#7c3aed">
 <title>Teacher's Hidden Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,20 +15,22 @@
 <!-- ============ LOGIN ============ -->
 <section class="view" id="loginView">
   <div class="card login-card">
-    <h1>📚 Class Quiz</h1>
+    <div class="login-icon">📚</div>
+    <h1>Class Quiz</h1>
     <p class="muted">Enter your name to join. Teacher? Enter the room code instead.</p>
     <form id="loginForm">
       <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
-      <button type="submit" class="btn primary">Continue</button>
+      <button type="submit" class="btn primary">Continue →</button>
     </form>
     <div id="loginStatus" class="status"></div>
+    <div class="hint-chip">🔑 Teachers: type <strong>4456</strong> to open the Hidden Room</div>
   </div>
 </section>
 
 <!-- ============ STUDENT VIEW ============ -->
 <section class="view hidden" id="studentView">
-  <header class="topbar">
-    <strong id="studentGreeting"></strong>
+  <header class="topbar topbar-student">
+    <span class="chip chip-student">🙋 <strong id="studentGreeting"></strong></span>
     <button class="btn ghost" id="studentLogout">Log out</button>
   </header>
 
@@ -54,44 +59,44 @@
 
 <!-- ============ HIDDEN ROOM (TEACHER) ============ -->
 <section class="view hidden" id="hiddenRoomView">
-  <header class="topbar">
-    <strong>🔒 Hidden Room</strong>
+  <header class="topbar topbar-teacher">
+    <span class="chip chip-teacher">🔒 Hidden Room</span>
     <button class="btn ghost" id="teacherLogout">Log out</button>
   </header>
 
-  <div class="card">
-    <h2>1. Upload page photos</h2>
+  <div class="card step-card step-1">
+    <h2><span class="step-badge">1</span>Upload page photos</h2>
     <p class="muted">Take photos (or upload) of the pages you want questions from.</p>
     <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
     <div class="btn-row">
-      <button class="btn primary" id="generateBtn">Extract text &amp; generate questions</button>
+      <button class="btn primary" id="generateBtn">✨ Extract text &amp; generate questions</button>
     </div>
     <div id="ocrStatus" class="status"></div>
   </div>
 
-  <div class="card hidden" id="questionsCard">
-    <h2>2. Review questions</h2>
+  <div class="card hidden step-card step-2" id="questionsCard">
+    <h2><span class="step-badge">2</span>Review questions</h2>
     <div class="btn-row" id="viewModeToggle">
-      <button class="btn secondary active" id="modeListBtn">Just questions</button>
-      <button class="btn secondary" id="modeInteractiveBtn">Interactive preview</button>
+      <button class="btn secondary active" id="modeListBtn">📋 Just questions</button>
+      <button class="btn secondary" id="modeInteractiveBtn">🎮 Interactive preview</button>
     </div>
     <div id="questionsArea"></div>
     <div class="btn-row">
       <button class="btn primary" id="sendBtn">📤 Send to children</button>
-      <button class="btn danger" id="clearLiveBtn">Stop live quiz</button>
+      <button class="btn danger" id="clearLiveBtn">🛑 Stop live quiz</button>
     </div>
     <div id="sendStatus" class="status"></div>
   </div>
 
-  <div class="card">
-    <h2>3. Who's logged in &amp; scores</h2>
+  <div class="card step-card step-3">
+    <h2><span class="step-badge">3</span>Who's logged in &amp; scores</h2>
     <div class="two-col">
       <div>
-        <h3>Logins</h3>
+        <h3>🧑‍🎓 Logins</h3>
         <div id="loginsTable" class="mini-table">Loading…</div>
       </div>
       <div>
-        <h3>Scores</h3>
+        <h3>🏆 Scores</h3>
         <div id="scoresTable" class="mini-table">No scores yet.</div>
       </div>
     </div>
