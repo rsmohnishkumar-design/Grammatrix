@@ -53,10 +53,18 @@ function lockOptions(container, question, chosenBtn) {
 }
 
 // Student-facing: picking an option just marks it selected — no reveal.
-// Correctness only ever shows after the whole test is submitted.
+// Correctness only ever shows after the whole test is submitted. Every
+// option gets a radio-style indicator on the right so the chosen answer
+// is unmistakable, not just a faint border tint.
 function renderSelectableOptions(container, question, selectedValue, onSelect) {
   container.innerHTML = "";
   const mainOptions = question.options.filter((o) => o !== "I don't know");
+
+  const addRadio = (btn) => {
+    const radio = document.createElement("span");
+    radio.className = "option-radio";
+    btn.appendChild(radio);
+  };
 
   mainOptions.forEach((opt, i) => {
     const btn = document.createElement("button");
@@ -67,6 +75,7 @@ function renderSelectableOptions(container, question, selectedValue, onSelect) {
     badge.textContent = LETTERS[i] || String(i + 1);
     btn.appendChild(badge);
     btn.appendChild(document.createTextNode(opt));
+    addRadio(btn);
     btn.addEventListener("click", () => onSelect(opt));
     container.appendChild(btn);
   });
@@ -79,7 +88,8 @@ function renderSelectableOptions(container, question, selectedValue, onSelect) {
   const idkBtn = document.createElement("button");
   idkBtn.className = "option idk" + (selectedValue === "I don't know" ? " selected" : "");
   idkBtn.dataset.value = "I don't know";
-  idkBtn.textContent = "🤷 I don't know";
+  idkBtn.appendChild(document.createTextNode("🤷 I don't know"));
+  addRadio(idkBtn);
   idkBtn.addEventListener("click", () => onSelect("I don't know"));
   container.appendChild(idkBtn);
 }
@@ -219,11 +229,17 @@ const StudentQuiz = {
     this.els.prevBtn.classList.toggle("hidden", this.fromReview || this.index === 0);
     this.els.nextBtn.textContent = this.fromReview ? "Back to review" : (isLast ? "Review & Submit" : "Next");
 
-    const select = (opt) => {
+    renderSelectableOptions(this.els.options, q, this.answers[this.index], (opt) => {
       this.answers[this.index] = opt;
-      renderSelectableOptions(this.els.options, q, opt, select);
-    };
-    renderSelectableOptions(this.els.options, q, this.answers[this.index], select);
+      // Toggle the selected class on the existing buttons rather than
+      // re-rendering the whole list — rebuilding the DOM here would
+      // re-trigger the entrance animation on every click, making the
+      // options visibly flicker right when the student needs to see
+      // their pick land.
+      Array.from(this.els.options.querySelectorAll(".option")).forEach((btn) => {
+        btn.classList.toggle("selected", btn.dataset.value === opt);
+      });
+    });
     this.replayEnterAnimation();
   },
 

@@ -13,6 +13,8 @@
   --amber:#f59e0b;
   --red:#ef4444;
   --blue:#3b82f6;
+  --indigo:#4f46e5;
+  --indigoSoft:#e0e7ff;
 
   --greenSoft:#dcfce7;
   --redSoft:#ffe4e4;
@@ -411,6 +413,33 @@ input[type="number"]:focus{
 .option:nth-of-type(3) .option-badge{background:var(--amber)}
 .option:nth-of-type(4) .option-badge{background:var(--teal)}
 
+/* Radio-style indicator on selectable (student answering) options —
+   an unmistakable signal for which answer is picked, independent of
+   the badge colors and never using the same green as "correct". */
+.option-radio{
+  flex:none;
+  margin-left:auto;
+  width:22px;height:22px;
+  border-radius:50%;
+  border:2px solid var(--line);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:border-color .15s, background .15s, transform .15s;
+}
+.option.selected .option-radio{
+  border-color:var(--indigo);
+  background:var(--indigo);
+  transform:scale(1.08);
+}
+.option.selected .option-radio:after{
+  content:"✓";
+  color:#fff;
+  font-size:.72rem;
+  font-weight:900;
+}
+
 .idk-divider{
   text-align:center;
   color:var(--muted);
@@ -425,17 +454,19 @@ input[type="number"]:focus{
 .option.dim{opacity:.45}
 
 .option.selected{
-  background:linear-gradient(135deg,#eafaf0,#d9f4e4)!important;
-  border-color:var(--emerald)!important;
-  box-shadow:0 8px 18px rgba(16,163,74,.2);
+  background:linear-gradient(135deg,var(--indigoSoft),#c7d2fe)!important;
+  border-color:var(--indigo)!important;
+  border-width:3px!important;
+  box-shadow:0 8px 18px rgba(79,70,229,.28);
+  animation:optionPop .25s ease;
 }
-.option.selected .option-badge{background:var(--emerald)!important}
+.option.selected .option-badge{background:var(--indigo)!important}
 
 .option.correct{background:linear-gradient(135deg,var(--greenSoft),#bbf7d0)!important;border-color:var(--emerald)!important;box-shadow:0 8px 18px rgba(34,197,94,.25);opacity:1!important;animation:optionPop .35s ease}
 .option.correct .option-badge{background:var(--emerald)!important}
 .option.wrong{background:linear-gradient(135deg,var(--redSoft),#ffc9c9)!important;border-color:var(--red)!important;opacity:1!important;animation:optionShake .4s ease}
 .option.wrong .option-badge{background:var(--red)!important}
-.option.idk{font-style:italic;color:var(--muted);border-style:dashed!important;background:#f7fdf9!important;justify-content:center}
+.option.idk{font-style:italic;color:var(--muted);border-style:dashed!important;background:#f7fdf9!important}
 
 @keyframes optionPop{0%{transform:scale(.94)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
 @keyframes optionShake{20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
