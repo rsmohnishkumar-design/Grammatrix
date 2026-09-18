@@ -14,6 +14,7 @@ const HiddenRoom = {
       sendBtn: document.getElementById("sendBtn"),
       clearLiveBtn: document.getElementById("clearLiveBtn"),
       resetQuestionsBtn: document.getElementById("resetQuestionsBtn"),
+      questionCountInput: document.getElementById("questionCountInput"),
       sendStatus: document.getElementById("sendStatus"),
       loginsTable: document.getElementById("loginsTable"),
       scoresTable: document.getElementById("scoresTable"),
@@ -103,7 +104,9 @@ const HiddenRoom = {
         return;
       }
 
-      const newQuestions = generateQuestions(text);
+      const requested = Math.min(50, Math.max(1, parseInt(this.els.questionCountInput.value, 10) || 8));
+      this.els.questionCountInput.value = requested;
+      const newQuestions = generateQuestions(text, requested);
       if (!newQuestions.length) {
         this.setStatus("Couldn't build questions from that text — try a page with fuller sentences.", "error");
         return;

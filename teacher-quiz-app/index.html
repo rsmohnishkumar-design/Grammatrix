@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#16a34a">
-<title>Testify</title>
+<title>Testify — Learn. Test. Improve.</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%85%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 
@@ -18,20 +18,20 @@
 <div class="app-backdrop" id="appBackdrop" aria-hidden="true">
   <div class="backdrop-inner">
     <header class="topbar">
+      <div class="brand-mini"><span class="brand-check">✓</span><strong>Testify</strong></div>
       <span class="chip chip-teacher">🔒 Hidden Room</span>
-      <span class="btn ghost">Log out</span>
     </header>
     <div class="live-banner live">🟢 Live now — questions are with your students</div>
     <div class="card step-card step-1">
-      <h2>📸 Upload pages</h2>
+      <h2><span class="step-number">1</span>📸 Upload pages</h2>
       <p class="muted">Take photos, or upload PDFs or notes, of what you want questions from.</p>
     </div>
     <div class="card step-card step-2">
-      <h2>📝 Questions</h2>
+      <h2><span class="step-number">2</span>📝 Questions</h2>
       <p class="muted">Review, edit and send questions to your class.</p>
     </div>
     <div class="card step-card step-3">
-      <h2>🧑‍🎓 Who's logged in &amp; scores</h2>
+      <h2><span class="step-number">3</span>🧑‍🎓 Who's logged in &amp; scores</h2>
       <p class="muted">See every login and score live.</p>
     </div>
   </div>
@@ -40,15 +40,23 @@
 <!-- ============ LOGIN ============ -->
 <section class="view" id="loginView">
   <div class="card login-card">
-    <div class="login-icon">✅</div>
-    <h1>Testify</h1>
-    <p class="muted">Enter your name to join. Teachers, enter your room code instead.</p>
+    <div class="login-icon-wrap"><div class="login-icon">✅</div></div>
+    <div class="brand-area">
+      <h1>Testify</h1>
+      <div class="brand-line"><span></span><span>Learn &bull; Test &bull; Improve</span><span></span></div>
+    </div>
+    <p class="login-intro">Enter your name to join a test.<br><span class="muted-line">Teachers, enter your room code instead.</span></p>
     <form id="loginForm">
-      <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
-      <button type="submit" class="btn primary">Continue →</button>
+      <div class="input-wrap">
+        <span class="input-icon">👤</span>
+        <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
+      </div>
+      <button type="submit" class="btn primary login-button">Continue <span>→</span></button>
     </form>
     <div id="loginStatus" class="status"></div>
+    <div class="login-note">🔒 Your name is only used to identify your test session.</div>
   </div>
+  <div class="login-footer">Powered by <strong>Testify</strong> &bull; Interactive Learning</div>
 </section>
 
 <!-- ============ STUDENT VIEW ============ -->
@@ -123,9 +131,13 @@
   <div class="live-banner" id="liveStatusBanner">⚪ No live test right now</div>
 
   <div class="card step-card step-1">
-    <h2>📸 Upload pages</h2>
+    <h2><span class="step-number">1</span>📸 Upload pages</h2>
     <p class="muted">Take photos, or upload PDFs or text/Markdown notes, of what you want questions from.</p>
     <input type="file" id="photoInput" accept="image/*,application/pdf,text/plain,text/markdown,.md,.markdown,.txt" capture="environment" multiple>
+
+    <label class="field-label" for="questionCountInput">How many questions to generate? (max 50)</label>
+    <input type="number" id="questionCountInput" min="1" max="50" value="8">
+
     <div class="btn-row">
       <button class="btn primary" id="generateBtn">✨ Extract text &amp; generate questions</button>
     </div>
@@ -133,7 +145,7 @@
   </div>
 
   <div class="card step-card step-2" id="questionsCard">
-    <h2>📝 Questions</h2>
+    <h2><span class="step-number">2</span>📝 Questions</h2>
     <div class="btn-row" id="viewModeToggle">
       <button class="btn secondary active" id="modeListBtn">📋 Just questions</button>
       <button class="btn secondary" id="modeInteractiveBtn">🎮 Interactive preview</button>
@@ -168,7 +180,7 @@
   </div>
 
   <div class="card step-card step-3">
-    <h2>🧑‍🎓 Who's logged in &amp; scores</h2>
+    <h2><span class="step-number">3</span>🧑‍🎓 Who's logged in &amp; scores</h2>
     <div class="two-col">
       <div>
         <h3>🧑‍🎓 Logins</h3>
@@ -192,12 +204,12 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=8"></script>
-<script src="js/questionGenerator.js?v=8"></script>
-<script src="js/ocr.js?v=8"></script>
-<script src="js/quiz.js?v=8"></script>
-<script src="js/hiddenRoom.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/firebase-config.js?v=9"></script>
+<script src="js/questionGenerator.js?v=9"></script>
+<script src="js/ocr.js?v=9"></script>
+<script src="js/quiz.js?v=9"></script>
+<script src="js/hiddenRoom.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 
 </body>
 </html>
