@@ -872,3 +872,64 @@ select:focus{
   font-weight:800;
   font-size:.76rem;
 }
+
+/* ---- Test mode: best-effort deterrents while answering/reviewing ---- */
+
+.watermark-layer{
+  position:fixed;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background-repeat:repeat;
+}
+
+.test-mode-banner{
+  position:fixed;
+  top:66px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:4;
+  background:var(--navy);
+  color:#fff;
+  padding:8px 18px;
+  border-radius:999px;
+  font-size:.72rem;
+  font-weight:800;
+  text-align:center;
+  max-width:92vw;
+  box-shadow:0 8px 20px rgba(20,33,61,.3);
+}
+
+.fullscreen-nudge{
+  position:fixed;
+  inset:0;
+  z-index:8;
+  background:rgba(13,23,41,.72);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.fullscreen-nudge.hidden{display:none!important}
+.fullscreen-nudge-card{
+  background:var(--surface);
+  border-radius:20px;
+  padding:28px 26px;
+  text-align:center;
+  max-width:340px;
+  box-shadow:var(--shadow);
+}
+.fullscreen-nudge-card p{margin-bottom:14px;font-weight:800;color:var(--ink)}
+
+.susp-flag{
+  margin-left:6px;
+  background:var(--bronze-pale);
+  color:var(--bronze);
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:.72rem;
+  font-weight:800;
+}
+
+/* Test-taking content should resist casual copy/select while in test mode. */
+.test-locked{user-select:none;-webkit-user-select:none}

@@ -439,7 +439,12 @@ const HiddenRoom = {
         return;
       }
       const html = rows
-        .map((r) => `<tr><td>${escapeHtml(r.username || "")}</td><td>${r.score}/${r.total}</td></tr>`)
+        .map((r) => {
+          const flag = r.suspicious > 0
+            ? ` <span class="susp-flag" title="Left the test or exited fullscreen ${r.suspicious} time(s)">⚠️ ${r.suspicious}</span>`
+            : "";
+          return `<tr><td>${escapeHtml(r.username || "")}</td><td>${r.score}/${r.total}${flag}</td></tr>`;
+        })
         .join("");
       this.els.scoresTable.innerHTML = `<table class="data"><thead><tr><th>Name</th><th>Score</th></tr></thead><tbody>${html}</tbody></table>`;
     });

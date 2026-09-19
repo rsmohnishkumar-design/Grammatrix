@@ -44,6 +44,11 @@ function routeTo(user) {
 }
 
 function logout() {
+  // A student can reach the logout button mid-test (it's in the navbar) —
+  // make sure fullscreen/watermark/banner don't stay stuck over the login
+  // screen afterward.
+  StudentQuiz.state = "home";
+  StudentQuiz.exitTestMode();
   localStorage.removeItem("tq_user");
   showView("login");
 }

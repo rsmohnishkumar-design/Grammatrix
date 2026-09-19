@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=14">
+<link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body>
 
@@ -88,6 +88,22 @@
       <button class="btn ghost" id="studentLogout">Log out</button>
     </div>
   </header>
+
+  <!-- Best-effort test-mode deterrents, shown only while answering/reviewing
+       a test (see StudentQuiz.enterTestMode/exitTestMode in quiz.js). This
+       cannot block OS-level screenshots or screen recording — no website
+       can — it locks fullscreen, discourages copy/right-click, and stamps
+       a traceable watermark so a screenshot can be traced back to who took it. -->
+  <div class="hidden" id="testModeUI">
+    <div class="watermark-layer" id="quizWatermark" aria-hidden="true"></div>
+    <div class="test-mode-banner" id="testModeBanner">🔒 Test mode — please stay in fullscreen. Leaving the test is recorded.</div>
+    <div class="fullscreen-nudge hidden" id="fullscreenNudge">
+      <div class="fullscreen-nudge-card">
+        <p>You exited fullscreen.</p>
+        <button class="btn primary" id="resumeFullscreenBtn">Return to fullscreen</button>
+      </div>
+    </div>
+  </div>
 
   <div class="page-container">
     <!-- Home: shown whenever the student isn't actively taking or reviewing a test -->
@@ -268,12 +284,12 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=14"></script>
-<script src="js/questionGenerator.js?v=14"></script>
-<script src="js/ocr.js?v=14"></script>
-<script src="js/quiz.js?v=14"></script>
-<script src="js/hiddenRoom.js?v=14"></script>
-<script src="js/app.js?v=14"></script>
+<script src="js/firebase-config.js?v=15"></script>
+<script src="js/questionGenerator.js?v=15"></script>
+<script src="js/ocr.js?v=15"></script>
+<script src="js/quiz.js?v=15"></script>
+<script src="js/hiddenRoom.js?v=15"></script>
+<script src="js/app.js?v=15"></script>
 
 </body>
 </html>
