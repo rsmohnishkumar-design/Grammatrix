@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=18">
+<link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
 
@@ -254,13 +254,6 @@
                   </div>
                   <div id="manualStatus" class="status"></div>
                 </div>
-
-                <div class="btn-row">
-                  <button class="btn primary" id="sendBtn">🚀 Send to children</button>
-                  <button class="btn danger" id="clearLiveBtn">❌ Stop live test</button>
-                  <button class="btn warning" id="resetQuestionsBtn">🔄 Reset questions</button>
-                </div>
-                <div id="sendStatus" class="status"></div>
               </div>
             </div>
 
@@ -275,6 +268,19 @@
                   <h3>🏆 Scores</h3>
                   <div id="scoresTable" class="mini-table">No scores yet.</div>
                 </div>
+              </div>
+            </div>
+
+            <!-- Fixed so Send/Stop/Reset stay reachable without scrolling
+                 back up past a long, growing question list. -->
+            <div class="teacher-action-bar">
+              <div class="teacher-action-bar-inner">
+                <div class="btn-row" style="margin-top:0">
+                  <button class="btn primary" id="sendBtn">🚀 Send to children</button>
+                  <button class="btn danger" id="clearLiveBtn">❌ Stop live test</button>
+                  <button class="btn warning" id="resetQuestionsBtn">🔄 Reset questions</button>
+                </div>
+                <div id="sendStatus" class="status"></div>
               </div>
             </div>
           </div>
@@ -294,12 +300,12 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=18"></script>
-<script src="js/questionGenerator.js?v=18"></script>
-<script src="js/ocr.js?v=18"></script>
-<script src="js/quiz.js?v=18"></script>
-<script src="js/hiddenRoom.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/firebase-config.js?v=19"></script>
+<script src="js/questionGenerator.js?v=19"></script>
+<script src="js/ocr.js?v=19"></script>
+<script src="js/quiz.js?v=19"></script>
+<script src="js/hiddenRoom.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

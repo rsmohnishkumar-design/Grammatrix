@@ -60,10 +60,24 @@ body{
 .page-container-wide{
   max-width:1280px;
   margin:0 auto;
-  padding:18px;
+  padding:18px 18px 100px;
 }
 @media(min-width:900px){
-  .page-container-wide{padding:24px 28px 40px;}
+  .page-container-wide{padding:24px 28px 110px;}
+}
+
+.teacher-action-bar{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:7;
+  background:var(--surface);
+  border-top:2px solid var(--line);
+  padding:12px 18px;
+  box-shadow:0 -8px 24px rgba(20,33,61,.14);
+}
+.teacher-action-bar-inner{
+  max-width:1280px;
+  margin:0 auto;
 }
 
 h1,h2,h3{
