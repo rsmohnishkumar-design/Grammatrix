@@ -328,7 +328,16 @@ const StudentQuiz = {
 
     db.collection("scores").orderBy("ts", "desc").limit(100).get()
       .then((snap) => {
-        const mine = snap.docs.map((d) => d.data()).filter((r) => r.username === username);
+        // Matching on username alone isn't enough — the same name can be
+        // reused by a different student in a different grade/section (e.g.
+        // several "Sam"s across the school), and without this check each
+        // would see every other's test history. Grade + section must also
+        // match the class this student is currently logged into.
+        const mine = snap.docs.map((d) => d.data()).filter((r) =>
+          r.username === username &&
+          String(r.grade) === String(current.grade) &&
+          String(r.section || "").toLowerCase() === String(current.section || "").toLowerCase()
+        );
         this.attendedScores = mine.slice(0, 10);
         if (!this.attendedScores.length) {
           area.innerHTML = '<p class="muted">You haven\'t attended any tests yet.</p>';

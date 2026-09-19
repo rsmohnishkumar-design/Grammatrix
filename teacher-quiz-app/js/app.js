@@ -29,6 +29,38 @@ async function recordLogin(username, role, grade, section) {
   }
 }
 
+// Two different students can end up in the same class with the same
+// first name (common across a whole school, not just one section) — if
+// both logged in as plain "Sam" in Grade 7 Section A, their test history
+// would merge. This device is remembered as already "owning" a name in a
+// given class (so the same student isn't blocked logging back in on their
+// own phone), and any other device trying the same name in that exact
+// class gets turned away instead of silently colliding.
+function claimKey(grade, section) {
+  return `tq_claim_g${grade}_s${String(section).toLowerCase()}`;
+}
+
+async function isUsernameTakenInClass(username, grade, section) {
+  const key = claimKey(grade, section);
+  const claimedHere = (localStorage.getItem(key) || "").toLowerCase();
+  if (claimedHere === username.toLowerCase()) return false;
+
+  try {
+    const snap = await db.collection("logins").orderBy("ts", "desc").limit(500).get();
+    const nameLower = username.toLowerCase();
+    return snap.docs.some((d) => {
+      const r = d.data();
+      return r.role === "student" &&
+        String(r.username || "").trim().toLowerCase() === nameLower &&
+        String(r.grade) === String(grade) &&
+        String(r.section || "").toLowerCase() === String(section).toLowerCase();
+    });
+  } catch (err) {
+    console.warn("Could not check for a duplicate username:", err);
+    return false; // fail open — a failed check shouldn't block a real login
+  }
+}
+
 function routeTo(user) {
   if (user.role === "admin") {
     showView("admin");
@@ -76,6 +108,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const raw = usernameInput.value.trim();
   const statusEl = document.getElementById("loginStatus");
+  const submitBtn = e.target.querySelector(".login-button");
   if (!raw) return;
 
   const role = raw === TEACHER_CODE ? "teacher" : raw === ADMIN_CODE ? "admin" : "student";
@@ -93,7 +126,22 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       statusEl.className = "status error";
       return;
     }
+
+    submitBtn.disabled = true;
+    statusEl.textContent = "Checking your name…";
+    statusEl.className = "status";
+    const taken = await isUsernameTakenInClass(raw, grade, section);
+    submitBtn.disabled = false;
+    if (taken) {
+      statusEl.textContent = `"${raw}" is already taken in Grade ${grade} Section ${section.toUpperCase()} — please add your class after your name, e.g. "${raw} ${section.toUpperCase()}2".`;
+      statusEl.className = "status error";
+      return;
+    }
+
     user = { username: raw, role, grade, section };
+    try {
+      localStorage.setItem(claimKey(grade, section), raw);
+    } catch (err) { /* ignore */ }
   }
 
   localStorage.setItem("tq_user", JSON.stringify(user));

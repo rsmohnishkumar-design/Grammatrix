@@ -2,18 +2,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Anyone can log a login and a quiz score, but never edit or delete
-    // someone else's entry once written.
+    // Anyone can log a login and a quiz score. Entries can't be edited,
+    // but they CAN be deleted — the admin room (login code 2708) relies on
+    // this to remove a stray/incorrect entry (e.g. a username collision
+    // between two different students). See README "Security note" — there
+    // is no real per-user auth here, so this is left open for the app to
+    // work with just the shared teacher/admin codes.
     match /logins/{doc} {
       allow create: if true;
       allow read: if true;
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if true;
     }
 
     match /scores/{doc} {
       allow create: if true;
       allow read: if true;
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if true;
     }
 
     // One live quiz document per (grade, section, subject) room, e.g.
