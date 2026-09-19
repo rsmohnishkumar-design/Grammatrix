@@ -97,10 +97,11 @@ const Admin = {
     this.els.scoresList.innerHTML = rows.map((r) => {
       const when = r.ts && r.ts.toDate ? r.ts.toDate().toLocaleString() : "Just now";
       const flag = r.suspicious > 0 ? ` <span class="susp-flag">⚠️ ${r.suspicious}</span>` : "";
+      const left = r.leftEarly ? ` <span class="susp-flag">🚪 Left early</span>` : "";
       return `
         <div class="admin-row">
           <div class="admin-row-main">
-            <strong>${escapeHtml(r.username || "")} &mdash; ${r.score}/${r.total}${flag}</strong>
+            <strong>${escapeHtml(r.username || "")} &mdash; ${r.score}/${r.total}${flag}${left}</strong>
             <span class="muted">Grade ${escapeHtml(String(r.grade || "—"))} &bull; Sec ${escapeHtml(String(r.section || "—"))} &bull; ${escapeHtml(r.subject || "—")} &bull; ${escapeHtml(when)}</span>
           </div>
           <button class="btn danger small" data-delete-score="${r.id}" title="Delete this score">🗑️</button>

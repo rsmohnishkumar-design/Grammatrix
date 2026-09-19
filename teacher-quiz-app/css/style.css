@@ -942,6 +942,8 @@ select:focus{
 }
 .fullscreen-nudge-card p{margin-bottom:14px;font-weight:800;color:var(--ink)}
 
+.leave-warning{color:var(--maroon)!important;font-weight:900!important}
+
 .susp-flag{
   margin-left:6px;
   background:var(--bronze-pale);

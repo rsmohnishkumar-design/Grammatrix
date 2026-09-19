@@ -154,7 +154,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   routeTo(user);
 });
 
-document.getElementById("studentLogout").addEventListener("click", logout);
+document.getElementById("studentLogout").addEventListener("click", () => {
+  if (StudentQuiz.inTestMode()) {
+    StudentQuiz.promptLeaveTest();
+  } else {
+    logout();
+  }
+});
 document.getElementById("teacherLogout").addEventListener("click", logout);
 document.getElementById("adminLogout").addEventListener("click", logout);
 

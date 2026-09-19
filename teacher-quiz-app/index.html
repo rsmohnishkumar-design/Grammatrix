@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=23">
+<link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
 
@@ -109,6 +109,18 @@
       <div class="fullscreen-nudge-card">
         <p>You exited fullscreen.</p>
         <button class="btn primary" id="resumeFullscreenBtn">Return to fullscreen</button>
+      </div>
+    </div>
+
+    <!-- Shown when the student clicks "Leave" mid-test, instead of
+         letting them just walk away silently. -->
+    <div class="fullscreen-nudge hidden" id="leaveConfirmModal">
+      <div class="fullscreen-nudge-card">
+        <p class="leave-warning">⚠️ Leaving now will save your current score to your teacher — any question you haven't answered yet will be marked wrong.</p>
+        <div class="btn-row" style="justify-content:center;margin-top:0">
+          <button class="btn ghost" id="leaveCancelBtn">Stay &amp; continue</button>
+          <button class="btn danger" id="leaveConfirmBtn">Leave &amp; submit</button>
+        </div>
       </div>
     </div>
   </div>
@@ -338,13 +350,13 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=23"></script>
-<script src="js/questionGenerator.js?v=23"></script>
-<script src="js/ocr.js?v=23"></script>
-<script src="js/quiz.js?v=23"></script>
-<script src="js/hiddenRoom.js?v=23"></script>
-<script src="js/admin.js?v=23"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/firebase-config.js?v=24"></script>
+<script src="js/questionGenerator.js?v=24"></script>
+<script src="js/ocr.js?v=24"></script>
+<script src="js/quiz.js?v=24"></script>
+<script src="js/hiddenRoom.js?v=24"></script>
+<script src="js/admin.js?v=24"></script>
+<script src="js/app.js?v=24"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

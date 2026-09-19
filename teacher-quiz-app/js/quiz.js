@@ -177,6 +177,9 @@ const StudentQuiz = {
       testModeUI: document.getElementById("testModeUI"),
       fullscreenNudge: document.getElementById("fullscreenNudge"),
       logoutBtn: document.getElementById("studentLogout"),
+      leaveConfirmModal: document.getElementById("leaveConfirmModal"),
+      leaveCancelBtn: document.getElementById("leaveCancelBtn"),
+      leaveConfirmBtn: document.getElementById("leaveConfirmBtn"),
       resumeFullscreenBtn: document.getElementById("resumeFullscreenBtn"),
     };
 
@@ -192,6 +195,8 @@ const StudentQuiz = {
     });
 
     this.els.resumeFullscreenBtn.addEventListener("click", () => this.requestFullscreenSafe());
+    this.els.leaveCancelBtn.addEventListener("click", () => this.cancelLeaveTest());
+    this.els.leaveConfirmBtn.addEventListener("click", () => this.confirmLeaveTest());
     document.addEventListener("fullscreenchange", () => this.handleFullscreenChange());
     document.addEventListener("visibilitychange", () => this.handleVisibilityChange());
     ["contextmenu", "copy", "cut", "selectstart"].forEach((evt) => {
@@ -263,23 +268,73 @@ const StudentQuiz = {
     this.els.testModeUI.classList.remove("hidden");
     this.els.quizCard.classList.add("test-locked");
     this.els.reviewCard.classList.add("test-locked");
-    // Logging out mid-test would let a student walk away from a test
-    // without submitting it (and dodge the suspicious-activity count).
-    this.els.logoutBtn.disabled = true;
-    this.els.logoutBtn.title = "You can log out once you've submitted the test.";
+    // The logout button becomes "Leave" during a test — clicking it opens
+    // a confirmation instead of logging out immediately, so a student
+    // can't walk away from a test without a clear warning first.
+    this.els.logoutBtn.textContent = "Leave";
     this.requestFullscreenSafe();
   },
 
   exitTestMode() {
     this.els.testModeUI.classList.add("hidden");
     this.els.fullscreenNudge.classList.add("hidden");
+    this.els.leaveConfirmModal.classList.add("hidden");
     this.els.quizCard.classList.remove("test-locked");
     this.els.reviewCard.classList.remove("test-locked");
-    this.els.logoutBtn.disabled = false;
-    this.els.logoutBtn.title = "";
+    this.els.logoutBtn.textContent = "Log out";
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
     }
+  },
+
+  promptLeaveTest() {
+    if (!this.inTestMode()) return;
+    this.els.leaveConfirmModal.classList.remove("hidden");
+  },
+
+  cancelLeaveTest() {
+    this.els.leaveConfirmModal.classList.add("hidden");
+  },
+
+  // Leaving mid-test still grades and saves whatever was answered so far
+  // (unanswered questions count as wrong), tagged leftEarly so the
+  // teacher can tell it apart from a normal completed submission.
+  async confirmLeaveTest() {
+    this.els.leaveConfirmModal.classList.add("hidden");
+
+    let score = 0;
+    this.questions.forEach((q, i) => {
+      if (this.answers[i] === q.correctAnswer) score += 1;
+    });
+    this.score = score;
+
+    const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    const room = this.activeRoom || {};
+    try {
+      await db.collection("scores").add({
+        username: current.username || "Unknown",
+        score,
+        total: this.questions.length,
+        grade: room.grade || current.grade || null,
+        section: room.section || current.section || null,
+        subject: room.subject || null,
+        roomId: room.id || null,
+        suspicious: this.suspiciousCount,
+        leftEarly: true,
+        answers: this.questions.map((q, i) => ({
+          questionText: q.questionText,
+          correctAnswer: q.correctAnswer,
+          yourAnswer: this.answers[i] || "Not answered",
+        })),
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      console.warn("Could not save score before leaving:", err);
+    }
+
+    this.state = "home";
+    this.exitTestMode();
+    logout();
   },
 
   requestFullscreenSafe() {
