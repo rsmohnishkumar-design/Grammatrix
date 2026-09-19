@@ -9,6 +9,20 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function subjectIcon(subject) {
+  const s = (subject || "").toLowerCase();
+  if (s.includes("bio")) return "🧬";
+  if (s.includes("chem")) return "🧪";
+  if (s.includes("phys")) return "🔭";
+  if (s.includes("math")) return "➗";
+  if (s.includes("eng")) return "📖";
+  if (s.includes("hist")) return "🏛️";
+  if (s.includes("geo")) return "🌍";
+  if (s.includes("comp") || s.includes("cs")) return "💻";
+  if (s.includes("art")) return "🎨";
+  return "📚";
+}
+
 // Teacher's interactive preview: clicking an option instantly reveals
 // correct/wrong, purely so the teacher can see what the test will feel
 // like. Students never get this — see renderSelectableOptions below.
@@ -104,22 +118,22 @@ const StudentQuiz = {
   score: 0,
   state: "home",
   fromReview: false,
-  pendingQuestions: null,
-  pendingQuizId: null,
+  liveRooms: [],
+  activeRoom: null,
+  roomsUnsub: null,
 
   els: {},
 
   init() {
     this.els = {
       studentHome: document.getElementById("studentHome"),
-      availableCard: document.getElementById("availableCard"),
-      availableCount: document.getElementById("availableCount"),
+      availableList: document.getElementById("availableList"),
       noTestCard: document.getElementById("noTestCard"),
-      startTestBtn: document.getElementById("startTestBtn"),
       attendedList: document.getElementById("attendedList"),
 
       quizCard: document.getElementById("studentQuizCard"),
       progress: document.getElementById("qProgress"),
+      subjectTag: document.getElementById("qSubjectTag"),
       text: document.getElementById("qText"),
       options: document.getElementById("qOptions"),
       prevBtn: document.getElementById("qPrevBtn"),
@@ -136,29 +150,44 @@ const StudentQuiz = {
       checkedBtn: document.getElementById("checkedBtn"),
     };
 
-    this.els.startTestBtn.addEventListener("click", () => this.beginTest());
     this.els.prevBtn.addEventListener("click", () => this.prevQuestion());
     this.els.nextBtn.addEventListener("click", () => this.nextQuestion());
     this.els.submitBtn.addEventListener("click", () => this.submitTest());
     this.els.checkedBtn.addEventListener("click", () => this.showHome());
 
-    db.collection("quiz").doc("current").onSnapshot((doc) => {
-      const hasTest = doc.exists && Array.isArray(doc.data().questions) && doc.data().questions.length;
-      if (hasTest) {
-        const data = doc.data();
-        this.pendingQuestions = data.questions;
-        this.pendingQuizId = data.id || JSON.stringify(data.questions);
-      } else {
-        this.pendingQuestions = null;
-        this.pendingQuizId = null;
-      }
+    this.els.availableList.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-room-id]");
+      if (!btn) return;
+      this.beginTest(btn.dataset.roomId);
+    });
+
+    // Covers a page reload with an already-saved session. A *fresh* login
+    // re-subscribes again via routeTo() — see subscribeRooms() below for
+    // why that re-subscribe is necessary, not just a courtesy refresh.
+    this.subscribeRooms();
+    this.showHome();
+  },
+
+  // Subscribing once at page load isn't enough: that subscription's very
+  // first (and maybe only) callback can fire before anyone has logged in,
+  // when tq_user is still empty — so it filters to zero rooms and then
+  // never re-fires just because a variable changed elsewhere in the app.
+  // routeTo() calls this again right after login so the filter runs with
+  // the now-known grade/section, the same fix pattern used for the
+  // "past scores missing after fresh login" bug.
+  subscribeRooms() {
+    if (this.roomsUnsub) this.roomsUnsub();
+    this.roomsUnsub = db.collection("rooms").onSnapshot((snap) => {
+      const user = JSON.parse(localStorage.getItem("tq_user") || "{}");
+      this.liveRooms = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((r) => Array.isArray(r.questions) && r.questions.length)
+        .filter((r) => user.role === "student" && String(r.grade) === String(user.grade) && String(r.section || "").toLowerCase() === String(user.section || "").toLowerCase());
       // Only auto-refresh the highlight while idle at home — never yank
       // someone out of a test they're actively taking, reviewing, or
       // just finished looking at.
       if (this.state === "home") this.showAvailable();
     });
-
-    this.showHome();
   },
 
   showHome() {
@@ -173,13 +202,23 @@ const StudentQuiz = {
   },
 
   showAvailable() {
-    if (this.pendingQuestions) {
-      this.els.availableCard.classList.remove("hidden");
+    if (this.liveRooms.length) {
       this.els.noTestCard.classList.add("hidden");
-      const n = this.pendingQuestions.length;
-      this.els.availableCount.textContent = `${n} question${n === 1 ? "" : "s"} waiting for you.`;
+      this.els.availableList.innerHTML = this.liveRooms.map((r) => {
+        const n = r.questions.length;
+        return `
+          <div class="card available-card">
+            <div class="subject-icon">${subjectIcon(r.subject)}</div>
+            <h2>${escapeHtml(r.subject)}</h2>
+            <p>${n} question${n === 1 ? "" : "s"} waiting for you.</p>
+            <div class="btn-row" style="justify-content:center">
+              <button class="btn primary" data-room-id="${r.id}">Start Test</button>
+            </div>
+          </div>
+        `;
+      }).join("");
     } else {
-      this.els.availableCard.classList.add("hidden");
+      this.els.availableList.innerHTML = "";
       this.els.noTestCard.classList.remove("hidden");
     }
   },
@@ -199,7 +238,8 @@ const StudentQuiz = {
         }
         area.innerHTML = mine.slice(0, 10).map((r) => {
           const date = r.ts && r.ts.toDate ? r.ts.toDate().toLocaleString() : "Just now";
-          return `<div class="attended-item"><span class="ai-date">${escapeHtml(date)}</span><span class="ai-score">${r.score}/${r.total}</span></div>`;
+          const subject = r.subject ? `<span class="subject-tag">${escapeHtml(r.subject)}</span>` : "";
+          return `<div class="attended-item"><span class="ai-date">${escapeHtml(date)} ${subject}</span><span class="ai-score">${r.score}/${r.total}</span></div>`;
         }).join("");
       })
       .catch((err) => {
@@ -208,15 +248,18 @@ const StudentQuiz = {
       });
   },
 
-  beginTest() {
-    if (!this.pendingQuestions) return;
-    this.questions = this.pendingQuestions;
+  beginTest(roomId) {
+    const room = this.liveRooms.find((r) => r.id === roomId);
+    if (!room) return;
+    this.activeRoom = room;
+    this.questions = room.questions;
     this.answers = new Array(this.questions.length).fill(null);
     this.index = 0;
     this.fromReview = false;
     this.state = "answering";
     this.els.studentHome.classList.add("hidden");
     this.els.quizCard.classList.remove("hidden");
+    this.els.subjectTag.textContent = room.subject;
     this.renderCurrent();
   },
 
@@ -318,11 +361,16 @@ const StudentQuiz = {
     this.score = score;
 
     const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    const room = this.activeRoom || {};
     try {
       await db.collection("scores").add({
         username: current.username || "Unknown",
         score,
         total: this.questions.length,
+        grade: room.grade || current.grade || null,
+        section: room.section || current.section || null,
+        subject: room.subject || null,
+        roomId: room.id || null,
         ts: firebase.firestore.FieldValue.serverTimestamp(),
       });
     } catch (err) {

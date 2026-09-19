@@ -1,33 +1,45 @@
-# Teacher's Hidden Room — Class Quiz App
+# Testify — Class Test App
 
 A small standalone app (separate from the main Grammatrix app in this repo —
 it does not touch it) for teachers to turn photos of textbook pages into a
-quiz students can play on their phones.
+test students can take on their phones or laptops.
 
 ## How it works
 
 1. **Login** — everyone opens the same page and types a name.
    - Typing the code `4456` in the name box logs the teacher into the
      **Hidden Room**.
-   - Any other name logs in as a student and waits for a quiz.
+   - Any other name logs in as a student. Students also pick their **Grade**
+     (1st–12th) and type their **Section** (e.g. "A") — this is what scopes
+     which tests they can see.
 2. **Hidden Room (teacher only)**
+   - The sidebar lists **Grade 1–12**. Click a grade to open its room.
+   - Inside a grade, set the **Section** and **Subject** (e.g. "A" /
+     "Biology") — a room only becomes active, and only becomes visible to
+     matching students, once both are filled in. A teacher can manage many
+     rooms (different sections and/or subjects) by switching these two
+     fields; each room's questions, live status and scores are kept
+     separate, keyed by grade + section + subject.
    - Upload or photograph pages (multiple at once).
    - The app runs on-device OCR (via [Tesseract.js](https://tesseract.projectnaptha.com/))
      to read the text — no server or API key needed.
    - It generates multiple-choice questions from the extracted text (a
      fill-in-the-blank style, rule-based generator — see
      `js/questionGenerator.js`). Every question always includes an
-     **"I don't know"** option.
+     **"I don't know"** option. Choose how many questions to generate (max 50).
    - Preview the set as **Just questions** (a plain answer key) or as the
      **Interactive preview** (exactly what students will see). Remove any
      question that came out badly before sending.
-   - **Send to children** publishes the quiz live; students see it appear
-     automatically. **Stop live quiz** takes it down again.
-   - The room also lists everyone who has logged in and every quiz score
-     submitted, live.
-3. **Student view** — waits for a live quiz, then shows one question at a
-   time with the options (including "I don't know"), and submits the final
-   score automatically when finished.
+   - **Send to children** publishes that room's test live; matching students
+     see it appear automatically, grouped by subject. **Stop live test**
+     takes it down again.
+   - The room also lists everyone who has logged in (filtered to that grade
+     + section) and every score submitted for that specific room, live.
+3. **Student view** — the home screen shows a card per subject that currently
+   has a live test for the student's grade + section. Starting one shows one
+   question at a time (including "I don't know"), then a review screen
+   before the final, locked submission. Past attempts show in "Test
+   attended" with their subject and score.
 
 ## Setup
 

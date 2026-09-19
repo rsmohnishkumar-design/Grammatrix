@@ -16,10 +16,11 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // The single live quiz document. See README "Security note" — there is
-    // no real per-user auth here, so this is left open for the app to work
-    // with just the shared teacher code.
-    match /quiz/current {
+    // One live quiz document per (grade, section, subject) room, e.g.
+    // "g7-sa-biology". See README "Security note" — there is no real
+    // per-user auth here, so this is left open for the app to work with
+    // just the shared teacher code.
+    match /rooms/{roomId} {
       allow read, write: if true;
     }
   }
