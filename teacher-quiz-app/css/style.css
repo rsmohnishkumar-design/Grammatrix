@@ -655,13 +655,21 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   align-items:center;
   justify-content:space-between;
   gap:12px;
+  width:100%;
   border:2px solid var(--line);
   background:var(--paleSurface);
   border-radius:14px;
   padding:12px 16px;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .12s, box-shadow .12s, border-color .12s;
 }
+.attended-item:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(20,33,61,.12);border-color:var(--gold)}
+.attended-item .ai-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .attended-item .ai-date{font-size:.78rem;color:var(--muted)}
 .attended-item .ai-score{
+  display:flex;align-items:center;gap:6px;
   font-weight:900;
   font-family:"Fredoka",sans-serif;
   background:var(--gold-pale);
@@ -669,6 +677,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   padding:4px 12px;
   border-radius:999px;
 }
+.attended-item .ai-chevron{color:var(--muted);font-weight:900}
 
 /* ---- Review screen (before submit) ---- */
 

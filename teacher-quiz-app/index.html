@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=19">
+<link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
 
@@ -164,6 +164,14 @@
       <div id="resultsArea"></div>
       <button class="btn secondary" id="checkedBtn">Checked</button>
     </div>
+
+    <!-- Reviewing a past attempt from "Test attended" -->
+    <div class="card hidden" id="pastAttemptCard">
+      <h2>📄 Past attempt</h2>
+      <p id="pastAttemptText"></p>
+      <div id="pastAttemptArea"></div>
+      <button class="btn secondary" id="pastAttemptBackBtn">← Back</button>
+    </div>
   </div>
 </section>
 
@@ -300,12 +308,12 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=19"></script>
-<script src="js/questionGenerator.js?v=19"></script>
-<script src="js/ocr.js?v=19"></script>
-<script src="js/quiz.js?v=19"></script>
-<script src="js/hiddenRoom.js?v=19"></script>
-<script src="js/app.js?v=19"></script>
+<script src="js/firebase-config.js?v=20"></script>
+<script src="js/questionGenerator.js?v=20"></script>
+<script src="js/ocr.js?v=20"></script>
+<script src="js/quiz.js?v=20"></script>
+<script src="js/hiddenRoom.js?v=20"></script>
+<script src="js/app.js?v=20"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

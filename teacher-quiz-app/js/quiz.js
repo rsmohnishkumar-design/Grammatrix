@@ -23,6 +23,24 @@ function buildWatermarkStyle(text) {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
+// Builds the same correct/wrong breakdown list used right after a fresh
+// submit and when reopening a past attempt from "Test attended" — items
+// is [{questionText, correctAnswer, yourAnswer}].
+function renderResultBreakdown(container, items) {
+  container.innerHTML = "";
+  items.forEach((item, i) => {
+    const isCorrect = item.yourAnswer === item.correctAnswer;
+    const block = document.createElement("div");
+    block.className = "result-item " + (isCorrect ? "correct" : "wrong");
+    block.innerHTML = `
+      <div class="ri-q">${i + 1}. ${escapeHtml(item.questionText)}</div>
+      <div class="ri-line ${isCorrect ? "good" : "bad"}">Your answer: ${escapeHtml(item.yourAnswer)}</div>
+      ${isCorrect ? "" : `<div class="ri-line good">Correct answer: ${escapeHtml(item.correctAnswer)}</div>`}
+    `;
+    container.appendChild(block);
+  });
+}
+
 function subjectIcon(subject) {
   const s = (subject || "").toLowerCase();
   if (s.includes("bio")) return "🧬";
@@ -136,6 +154,7 @@ const StudentQuiz = {
   activeRoom: null,
   roomsUnsub: null,
   suspiciousCount: 0,
+  attendedScores: [],
 
   els: {},
 
@@ -164,6 +183,11 @@ const StudentQuiz = {
       resultsArea: document.getElementById("resultsArea"),
       checkedBtn: document.getElementById("checkedBtn"),
 
+      pastAttemptCard: document.getElementById("pastAttemptCard"),
+      pastAttemptText: document.getElementById("pastAttemptText"),
+      pastAttemptArea: document.getElementById("pastAttemptArea"),
+      pastAttemptBackBtn: document.getElementById("pastAttemptBackBtn"),
+
       testModeUI: document.getElementById("testModeUI"),
       quizWatermark: document.getElementById("quizWatermark"),
       fullscreenNudge: document.getElementById("fullscreenNudge"),
@@ -174,6 +198,12 @@ const StudentQuiz = {
     this.els.nextBtn.addEventListener("click", () => this.nextQuestion());
     this.els.submitBtn.addEventListener("click", () => this.submitTest());
     this.els.checkedBtn.addEventListener("click", () => this.showHome());
+    this.els.pastAttemptBackBtn.addEventListener("click", () => this.closePastAttempt());
+    this.els.attendedList.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-attended-index]");
+      if (!btn) return;
+      this.showPastAttempt(Number(btn.dataset.attendedIndex));
+    });
 
     this.els.resumeFullscreenBtn.addEventListener("click", () => this.requestFullscreenSafe());
     document.addEventListener("fullscreenchange", () => this.handleFullscreenChange());
@@ -225,6 +255,7 @@ const StudentQuiz = {
     this.els.quizCard.classList.add("hidden");
     this.els.reviewCard.classList.add("hidden");
     this.els.resultCard.classList.add("hidden");
+    this.els.pastAttemptCard.classList.add("hidden");
     this.els.resultCard.querySelectorAll(".confetti-piece").forEach((el) => el.remove());
     this.els.studentHome.classList.remove("hidden");
     this.showAvailable();
@@ -317,20 +348,46 @@ const StudentQuiz = {
     db.collection("scores").orderBy("ts", "desc").limit(100).get()
       .then((snap) => {
         const mine = snap.docs.map((d) => d.data()).filter((r) => r.username === username);
-        if (!mine.length) {
+        this.attendedScores = mine.slice(0, 10);
+        if (!this.attendedScores.length) {
           area.innerHTML = '<p class="muted">You haven\'t attended any tests yet.</p>';
           return;
         }
-        area.innerHTML = mine.slice(0, 10).map((r) => {
+        area.innerHTML = this.attendedScores.map((r, i) => {
           const date = r.ts && r.ts.toDate ? r.ts.toDate().toLocaleString() : "Just now";
           const subject = r.subject ? `<span class="subject-tag">${escapeHtml(r.subject)}</span>` : "";
-          return `<div class="attended-item"><span class="ai-date">${escapeHtml(date)} ${subject}</span><span class="ai-score">${r.score}/${r.total}</span></div>`;
+          return `<button class="attended-item" data-attended-index="${i}">
+            <span class="ai-left"><span class="ai-date">${escapeHtml(date)}</span> ${subject}</span>
+            <span class="ai-score">${r.score}/${r.total} <span class="ai-chevron">›</span></span>
+          </button>`;
         }).join("");
       })
       .catch((err) => {
         console.warn("Could not load attended tests:", err);
         area.innerHTML = '<p class="muted">Could not load your test history.</p>';
       });
+  },
+
+  showPastAttempt(index) {
+    const record = this.attendedScores[index];
+    if (!record) return;
+    this.els.studentHome.classList.add("hidden");
+    this.els.pastAttemptCard.classList.remove("hidden");
+
+    const date = record.ts && record.ts.toDate ? record.ts.toDate().toLocaleString() : "Just now";
+    const subjectBit = record.subject ? ` • ${escapeHtml(record.subject)}` : "";
+    this.els.pastAttemptText.innerHTML = `You scored <strong>${record.score} out of ${record.total}</strong> — ${escapeHtml(date)}${subjectBit}`;
+
+    if (Array.isArray(record.answers) && record.answers.length) {
+      renderResultBreakdown(this.els.pastAttemptArea, record.answers);
+    } else {
+      this.els.pastAttemptArea.innerHTML = '<p class="muted">A question-by-question breakdown isn\'t available for this older attempt.</p>';
+    }
+  },
+
+  closePastAttempt() {
+    this.els.pastAttemptCard.classList.add("hidden");
+    this.showHome();
   },
 
   beginTest(roomId) {
@@ -458,6 +515,15 @@ const StudentQuiz = {
         subject: room.subject || null,
         roomId: room.id || null,
         suspicious: this.suspiciousCount,
+        // Snapshotted here rather than re-read from the room later: the
+        // teacher can reset/stop/change the room's questions afterward,
+        // so this is the only reliable record of what was actually asked
+        // and answered for "Test attended" to show a breakdown from.
+        answers: this.questions.map((q, i) => ({
+          questionText: q.questionText,
+          correctAnswer: q.correctAnswer,
+          yourAnswer: this.answers[i],
+        })),
         ts: firebase.firestore.FieldValue.serverTimestamp(),
       });
     } catch (err) {
@@ -475,20 +541,11 @@ const StudentQuiz = {
     this.els.resultCard.classList.remove("hidden");
     this.els.resultText.textContent = `You scored ${this.score} out of ${this.questions.length}.`;
 
-    const area = this.els.resultsArea;
-    area.innerHTML = "";
-    this.questions.forEach((q, i) => {
-      const ans = this.answers[i];
-      const isCorrect = ans === q.correctAnswer;
-      const block = document.createElement("div");
-      block.className = "result-item " + (isCorrect ? "correct" : "wrong");
-      block.innerHTML = `
-        <div class="ri-q">${i + 1}. ${escapeHtml(q.questionText)}</div>
-        <div class="ri-line ${isCorrect ? "good" : "bad"}">Your answer: ${escapeHtml(ans)}</div>
-        ${isCorrect ? "" : `<div class="ri-line good">Correct answer: ${escapeHtml(q.correctAnswer)}</div>`}
-      `;
-      area.appendChild(block);
-    });
+    renderResultBreakdown(this.els.resultsArea, this.questions.map((q, i) => ({
+      questionText: q.questionText,
+      correctAnswer: q.correctAnswer,
+      yourAnswer: this.answers[i],
+    })));
 
     this.spawnConfetti();
   },
