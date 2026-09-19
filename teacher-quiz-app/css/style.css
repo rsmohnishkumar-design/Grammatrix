@@ -368,10 +368,10 @@ input[type="number"]:focus{
   flex:none;
   display:flex;align-items:center;justify-content:center;
   border-radius:12px;
-  background:linear-gradient(135deg,var(--navy),var(--navy-deep));
-  font-size:1.2rem;
-  box-shadow:0 6px 16px rgba(20,33,61,.3);
+  background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+  box-shadow:0 6px 16px rgba(201,162,39,.35);
 }
+.navbar-logo svg{display:block}
 .navbar-title{
   font-family:"Fredoka",sans-serif;
   font-weight:800;
