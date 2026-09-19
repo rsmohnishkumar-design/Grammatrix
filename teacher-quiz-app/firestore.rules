@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Anyone can log a login and a quiz score, but never edit or delete
+    // someone else's entry once written.
+    match /logins/{doc} {
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if false;
+    }
+
+    match /scores/{doc} {
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if false;
+    }
+
+    // One live quiz document per (grade, section, subject) room, e.g.
+    // "g7-sa-biology". See README "Security note" — there is no real
+    // per-user auth here, so this is left open for the app to work with
+    // just the shared teacher code.
+    match /rooms/{roomId} {
+      allow read, write: if true;
+    }
+  }
+}
