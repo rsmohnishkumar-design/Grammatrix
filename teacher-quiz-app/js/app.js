@@ -81,9 +81,13 @@ function routeTo(user) {
 }
 
 function logout() {
-  // A student can reach the logout button mid-test (it's in the navbar) —
-  // make sure fullscreen/banner don't stay stuck over the login screen
-  // afterward.
+  // The logout button is disabled while a student is answering/reviewing
+  // a test (see StudentQuiz.enterTestMode), but guard here too in case
+  // anything else ever calls this mid-test.
+  if (StudentQuiz.inTestMode()) return;
+  // Make sure fullscreen/banner don't stay stuck over the login screen
+  // afterward (e.g. a student logging out right after submitting, while
+  // still in fullscreen).
   StudentQuiz.state = "home";
   StudentQuiz.exitTestMode();
   Admin.stop();

@@ -176,6 +176,7 @@ const StudentQuiz = {
 
       testModeUI: document.getElementById("testModeUI"),
       fullscreenNudge: document.getElementById("fullscreenNudge"),
+      logoutBtn: document.getElementById("studentLogout"),
       resumeFullscreenBtn: document.getElementById("resumeFullscreenBtn"),
     };
 
@@ -262,6 +263,10 @@ const StudentQuiz = {
     this.els.testModeUI.classList.remove("hidden");
     this.els.quizCard.classList.add("test-locked");
     this.els.reviewCard.classList.add("test-locked");
+    // Logging out mid-test would let a student walk away from a test
+    // without submitting it (and dodge the suspicious-activity count).
+    this.els.logoutBtn.disabled = true;
+    this.els.logoutBtn.title = "You can log out once you've submitted the test.";
     this.requestFullscreenSafe();
   },
 
@@ -270,6 +275,8 @@ const StudentQuiz = {
     this.els.fullscreenNudge.classList.add("hidden");
     this.els.quizCard.classList.remove("test-locked");
     this.els.reviewCard.classList.remove("test-locked");
+    this.els.logoutBtn.disabled = false;
+    this.els.logoutBtn.title = "";
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
     }
