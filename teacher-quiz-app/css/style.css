@@ -904,14 +904,6 @@ select:focus{
 
 /* ---- Test mode: best-effort deterrents while answering/reviewing ---- */
 
-.watermark-layer{
-  position:fixed;
-  inset:0;
-  z-index:3;
-  pointer-events:none;
-  background-repeat:repeat;
-}
-
 .test-mode-banner{
   position:fixed;
   top:66px;
@@ -962,3 +954,31 @@ select:focus{
 
 /* Test-taking content should resist casual copy/select while in test mode. */
 .test-locked{user-select:none;-webkit-user-select:none}
+
+/* ---- Admin overview room ---- */
+
+.btn.danger.small{
+  padding:7px 14px;
+  font-size:.78rem;
+  flex-shrink:0;
+}
+
+.admin-two-col{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.admin-two-col{grid-template-columns:1fr 1fr}}
+
+.admin-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
+.admin-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:var(--paleSurface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 14px;
+}
+
+.admin-row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.admin-row-main strong{font-family:"Fredoka",sans-serif}
+.admin-row-main .muted{font-size:.76rem}

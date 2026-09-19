@@ -9,20 +9,6 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function escapeXml(str) {
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-// A tiled, semi-transparent SVG background: not a way to stop a
-// screenshot (nothing in a browser can do that), but it stamps who took
-// the test and when directly into the pixels, so any screenshot that
-// does get taken is traceable.
-function buildWatermarkStyle(text) {
-  const safe = escapeXml(text);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="280" height="170"><text x="0" y="95" font-family="sans-serif" font-size="15" fill="rgba(20,33,61,0.10)" transform="rotate(-28 140 85)">${safe}</text></svg>`;
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-}
-
 // Builds the same correct/wrong breakdown list used right after a fresh
 // submit and when reopening a past attempt from "Test attended" — items
 // is [{questionText, correctAnswer, yourAnswer}].
@@ -189,7 +175,6 @@ const StudentQuiz = {
       pastAttemptBackBtn: document.getElementById("pastAttemptBackBtn"),
 
       testModeUI: document.getElementById("testModeUI"),
-      quizWatermark: document.getElementById("quizWatermark"),
       fullscreenNudge: document.getElementById("fullscreenNudge"),
       resumeFullscreenBtn: document.getElementById("resumeFullscreenBtn"),
     };
@@ -265,9 +250,8 @@ const StudentQuiz = {
   // ---- Best-effort test-mode deterrents ----
   // None of this can actually stop a screenshot or screen recording — no
   // website can. It locks fullscreen (and nags if the student leaves it),
-  // discourages right-click/copy, and stamps a traceable watermark, and
-  // counts how many times the student left the test so the teacher can
-  // see it next to their score.
+  // discourages right-click/copy, and counts how many times the student
+  // left the test so the teacher can see it next to their score.
 
   inTestMode() {
     return this.state === "answering" || this.state === "reviewing";
@@ -275,9 +259,6 @@ const StudentQuiz = {
 
   enterTestMode() {
     this.suspiciousCount = 0;
-    const user = JSON.parse(localStorage.getItem("tq_user") || "{}");
-    const stamp = `${user.username || "student"} • ${new Date().toLocaleString()}`;
-    this.els.quizWatermark.style.backgroundImage = buildWatermarkStyle(stamp);
     this.els.testModeUI.classList.remove("hidden");
     this.els.quizCard.classList.add("test-locked");
     this.els.reviewCard.classList.add("test-locked");

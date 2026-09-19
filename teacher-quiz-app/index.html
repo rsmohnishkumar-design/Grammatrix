@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20">
+<link rel="stylesheet" href="css/style.css?v=21">
 </head>
 <body>
 
@@ -102,10 +102,8 @@
   <!-- Best-effort test-mode deterrents, shown only while answering/reviewing
        a test (see StudentQuiz.enterTestMode/exitTestMode in quiz.js). This
        cannot block OS-level screenshots or screen recording — no website
-       can — it locks fullscreen, discourages copy/right-click, and stamps
-       a traceable watermark so a screenshot can be traced back to who took it. -->
+       can — it locks fullscreen and discourages copy/right-click. -->
   <div class="hidden" id="testModeUI">
-    <div class="watermark-layer" id="quizWatermark" aria-hidden="true"></div>
     <div class="test-mode-banner" id="testModeBanner">🔒 Test mode — please stay in fullscreen. Leaving the test is recorded.</div>
     <div class="fullscreen-nudge hidden" id="fullscreenNudge">
       <div class="fullscreen-nudge-card">
@@ -298,6 +296,38 @@
   </div>
 </section>
 
+<!-- ============ ADMIN ============ -->
+<section class="view hidden" id="adminView">
+  <header class="app-navbar">
+    <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Admin Overview</div></div></div>
+    <div class="navbar-right">
+      <span class="chip chip-teacher">🛡️ Admin</span>
+      <button class="btn ghost" id="adminLogout">Log out</button>
+    </div>
+  </header>
+
+  <div class="page-container-wide">
+    <div class="card">
+      <h2>🏷️ Every room</h2>
+      <p class="muted">Every grade/section/subject room any teacher has opened, across the whole app. Deleting one stops that test for students right away.</p>
+      <div id="adminRoomsList" class="admin-list">Loading…</div>
+    </div>
+
+    <div class="admin-two-col">
+      <div class="card">
+        <h2>🧑‍🎓 All logins</h2>
+        <p class="muted">Most recent 200, newest first.</p>
+        <div id="adminLoginsList" class="admin-list">Loading…</div>
+      </div>
+      <div class="card">
+        <h2>🏆 All scores</h2>
+        <p class="muted">Most recent 200, newest first. Deleting one removes it from that student's "Test attended" list too.</p>
+        <div id="adminScoresList" class="admin-list">Loading…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
@@ -308,12 +338,13 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=20"></script>
-<script src="js/questionGenerator.js?v=20"></script>
-<script src="js/ocr.js?v=20"></script>
-<script src="js/quiz.js?v=20"></script>
-<script src="js/hiddenRoom.js?v=20"></script>
-<script src="js/app.js?v=20"></script>
+<script src="js/firebase-config.js?v=21"></script>
+<script src="js/questionGenerator.js?v=21"></script>
+<script src="js/ocr.js?v=21"></script>
+<script src="js/quiz.js?v=21"></script>
+<script src="js/hiddenRoom.js?v=21"></script>
+<script src="js/admin.js?v=21"></script>
+<script src="js/app.js?v=21"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

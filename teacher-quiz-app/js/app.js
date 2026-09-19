@@ -1,9 +1,11 @@
 const TEACHER_CODE = "4456";
+const ADMIN_CODE = "2708";
 
 const views = {
   login: document.getElementById("loginView"),
   student: document.getElementById("studentView"),
   hiddenRoom: document.getElementById("hiddenRoomView"),
+  admin: document.getElementById("adminView"),
 };
 
 function showView(name) {
@@ -28,7 +30,10 @@ async function recordLogin(username, role, grade, section) {
 }
 
 function routeTo(user) {
-  if (user.role === "teacher") {
+  if (user.role === "admin") {
+    showView("admin");
+    Admin.start();
+  } else if (user.role === "teacher") {
     showView("hiddenRoom");
   } else {
     document.getElementById("studentGreeting").textContent = `Hi, ${user.username}`;
@@ -45,10 +50,11 @@ function routeTo(user) {
 
 function logout() {
   // A student can reach the logout button mid-test (it's in the navbar) —
-  // make sure fullscreen/watermark/banner don't stay stuck over the login
-  // screen afterward.
+  // make sure fullscreen/banner don't stay stuck over the login screen
+  // afterward.
   StudentQuiz.state = "home";
   StudentQuiz.exitTestMode();
+  Admin.stop();
   localStorage.removeItem("tq_user");
   showView("login");
 }
@@ -59,8 +65,9 @@ const gradeSelect = document.getElementById("gradeSelect");
 const sectionInput = document.getElementById("sectionInput");
 
 function syncStudentFieldsVisibility() {
-  const isTeacherCode = usernameInput.value.trim() === TEACHER_CODE;
-  studentFieldsWrap.classList.toggle("hidden", isTeacherCode);
+  const raw = usernameInput.value.trim();
+  const isSpecialCode = raw === TEACHER_CODE || raw === ADMIN_CODE;
+  studentFieldsWrap.classList.toggle("hidden", isSpecialCode);
 }
 usernameInput.addEventListener("input", syncStudentFieldsVisibility);
 syncStudentFieldsVisibility();
@@ -71,11 +78,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const statusEl = document.getElementById("loginStatus");
   if (!raw) return;
 
-  const role = raw === TEACHER_CODE ? "teacher" : "student";
+  const role = raw === TEACHER_CODE ? "teacher" : raw === ADMIN_CODE ? "admin" : "student";
   let user;
 
   if (role === "teacher") {
     user = { username: "Teacher", role };
+  } else if (role === "admin") {
+    user = { username: "Admin", role };
   } else {
     const grade = gradeSelect.value;
     const section = sectionInput.value.trim();
@@ -95,9 +104,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
 document.getElementById("studentLogout").addEventListener("click", logout);
 document.getElementById("teacherLogout").addEventListener("click", logout);
+document.getElementById("adminLogout").addEventListener("click", logout);
 
 StudentQuiz.init();
 HiddenRoom.init();
+Admin.init();
 
 const existing = JSON.parse(localStorage.getItem("tq_user") || "null");
 if (existing) {
