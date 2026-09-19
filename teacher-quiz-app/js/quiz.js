@@ -332,9 +332,11 @@ const StudentQuiz = {
       console.warn("Could not save score before leaving:", err);
     }
 
-    this.state = "home";
-    this.exitTestMode();
-    logout();
+    // Leaving a test should land back on the student's own home tab
+    // (Test attended etc.), not sign them out of the app entirely — they
+    // shouldn't have to type their name/grade/section in again right
+    // after just being warned their score was being saved.
+    this.showHome();
   },
 
   requestFullscreenSafe() {
