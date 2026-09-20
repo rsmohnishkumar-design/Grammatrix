@@ -79,7 +79,11 @@ const IssueReporter = {
       setTimeout(() => this.close(), 900);
     } catch (err) {
       console.error(err);
-      this.els.status.textContent = "Could not send — check your connection.";
+      // Show the real reason on-screen, not just a generic message — on a
+      // phone with the app installed there's usually no easy way to open
+      // DevTools and see console.error output above.
+      const reason = (err && (err.code || err.message)) || "unknown error";
+      this.els.status.textContent = `Could not send (${reason}). Check your connection and try again.`;
       this.els.status.className = "status error";
     } finally {
       this.els.submitBtn.disabled = false;
