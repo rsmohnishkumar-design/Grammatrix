@@ -1074,6 +1074,8 @@ input,select,textarea{color-scheme:dark}
   line-height:1.4;
 }
 .notif-item + .notif-item{margin-top:2px}
+.notif-item-clickable{cursor:pointer;transition:background .12s}
+.notif-item-clickable:hover{background:var(--pale)}
 .kebab-dropdown{
   position:absolute;
   top:calc(100% + 8px);

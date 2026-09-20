@@ -15,18 +15,44 @@ const Notifications = {
   rooms: [],
   roomsUnsub: null,
   tickInterval: null,
+  lastItems: { student: [], teacher: [], admin: [] },
 
   SOON_MS: 24 * 60 * 60 * 1000, // "due soon" window
 
   init() {
     this.els = {
+      studentBellBtn: document.getElementById("studentBellBtn"),
       studentPanel: document.getElementById("studentBellPanel"),
       studentBadge: document.getElementById("studentBellBadge"),
+      teacherBellBtn: document.getElementById("teacherBellBtn"),
       teacherPanel: document.getElementById("teacherBellPanel"),
       teacherBadge: document.getElementById("teacherBellBadge"),
+      adminBellBtn: document.getElementById("adminBellBtn"),
       adminPanel: document.getElementById("adminBellPanel"),
       adminBadge: document.getElementById("adminBellBadge"),
     };
+
+    // Opening the bell clears its badge — it's an unread count, not a
+    // count of everything currently pending. It reappears only once the
+    // underlying list actually changes (see markSeen/paint below).
+    if (this.els.studentBellBtn) this.els.studentBellBtn.addEventListener("click", () => this.markSeen("student"));
+    if (this.els.teacherBellBtn) this.els.teacherBellBtn.addEventListener("click", () => this.markSeen("teacher"));
+    if (this.els.adminBellBtn) this.els.adminBellBtn.addEventListener("click", () => this.markSeen("admin"));
+
+    // Admin can act on a notification directly instead of having to find
+    // the room by hand in "Every room" below.
+    if (this.els.adminPanel) {
+      this.els.adminPanel.addEventListener("click", (e) => {
+        const item = e.target.closest("[data-notif-room]");
+        if (!item) return;
+        const roomId = item.dataset.notifRoom;
+        if (typeof Admin !== "undefined" && Admin.editingRoomId !== roomId) {
+          Admin.toggleEditRoom(roomId);
+        }
+        const row = document.querySelector(`[data-edit-room="${CSS.escape(roomId)}"]`);
+        if (row) row.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
 
     this.roomsUnsub = db.collection("rooms").onSnapshot((snap) => {
       this.rooms = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -61,7 +87,7 @@ const Notifications = {
         items.push({ icon: "⏰", text: `${r.subject} closes ${new Date(dueMs).toLocaleString()}.` });
       }
     });
-    this.paint(this.els.studentPanel, this.els.studentBadge, items, "No tests waiting and nothing due soon.");
+    this.paint("student", this.els.studentPanel, this.els.studentBadge, items, "No tests waiting and nothing due soon.", user);
   },
 
   renderStaff(role) {
@@ -75,25 +101,54 @@ const Notifications = {
       const dueMs = toMillis(r.dueAt);
       const label = roomLabel(r.grade, r.section, r.subject);
       if (dueMs <= now) {
-        items.push({ icon: "🔒", text: `${label} has expired — reset & resend when ready.` });
+        items.push({ icon: "🔒", text: `${label} has expired — reset & resend when ready.`, roomId: r.id });
       } else if (dueMs - now <= this.SOON_MS) {
-        items.push({ icon: "⏰", text: `${label} closes ${new Date(dueMs).toLocaleString()}.` });
+        items.push({ icon: "⏰", text: `${label} closes ${new Date(dueMs).toLocaleString()}.`, roomId: r.id });
       }
     });
-    this.paint(panel, badge, items, "Nothing due soon or expired.");
+    this.paint(role, panel, badge, items, "Nothing due soon or expired.");
   },
 
-  paint(panel, badge, items, emptyText) {
+  // Per-role (and per-class for students, since two students on the
+  // same device would otherwise share one "seen" state) key for what
+  // was already shown the last time the bell was opened.
+  seenKey(role, user) {
+    if (role === "student") return `tq_notif_seen_student_${user.grade}_${String(user.section || "").toLowerCase()}`;
+    return `tq_notif_seen_${role}`;
+  },
+
+  paint(role, panel, badge, items, emptyText, user) {
+    this.lastItems[role] = items;
+    const signature = JSON.stringify(items.map((it) => it.text));
+    let seenSignature = "";
+    try { seenSignature = localStorage.getItem(this.seenKey(role, user || {})) || ""; } catch (err) { /* ignore */ }
+    const unseen = signature === seenSignature ? 0 : items.length;
+
     if (badge) {
-      if (items.length) {
-        badge.textContent = String(items.length);
+      if (unseen > 0) {
+        badge.textContent = String(unseen);
         badge.classList.remove("hidden");
       } else {
         badge.classList.add("hidden");
       }
     }
+
+    const clickable = role === "admin";
     panel.innerHTML = items.length
-      ? items.map((it) => `<div class="notif-item">${it.icon} ${escapeHtml(it.text)}</div>`).join("")
+      ? items.map((it) => {
+          const attr = clickable && it.roomId ? ` data-notif-room="${it.roomId}"` : "";
+          const cls = clickable && it.roomId ? " notif-item-clickable" : "";
+          return `<div class="notif-item${cls}"${attr}>${it.icon} ${escapeHtml(it.text)}</div>`;
+        }).join("")
       : `<p class="muted" style="padding:10px 12px">${emptyText}</p>`;
+  },
+
+  markSeen(role) {
+    const user = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    const items = this.lastItems[role] || [];
+    const signature = JSON.stringify(items.map((it) => it.text));
+    try { localStorage.setItem(this.seenKey(role, user), signature); } catch (err) { /* ignore */ }
+    const badge = role === "student" ? this.els.studentBadge : role === "teacher" ? this.els.teacherBadge : this.els.adminBadge;
+    if (badge) badge.classList.add("hidden");
   },
 };
