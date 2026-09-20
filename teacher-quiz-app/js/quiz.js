@@ -727,8 +727,14 @@ const StudentQuiz = {
         })),
         ts: firebase.firestore.FieldValue.serverTimestamp(),
       });
+      this.saveFailed = false;
     } catch (err) {
       console.warn("Could not save score:", err);
+      // The local result below is computed client-side regardless, so a
+      // failed save here is invisible to the student unless flagged —
+      // that's exactly how VRK's completed attempt silently stayed
+      // "in_progress" in the teacher/admin view for a real permissions bug.
+      this.saveFailed = true;
     }
 
     this.els.submitBtn.disabled = false;
@@ -741,6 +747,9 @@ const StudentQuiz = {
     this.els.reviewCard.classList.add("hidden");
     this.els.resultCard.classList.remove("hidden");
     this.els.resultText.textContent = `You scored ${this.score} out of ${this.questions.length}.`;
+    if (this.saveFailed) {
+      this.els.resultText.textContent += " ⚠️ This couldn't be saved online — screenshot this screen and show your teacher.";
+    }
 
     renderResultBreakdown(this.els.resultsArea, this.questions.map((q, i) => ({
       questionText: q.questionText,

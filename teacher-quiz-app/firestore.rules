@@ -15,10 +15,18 @@ service cloud.firestore {
       allow delete: if true;
     }
 
+    // A student's attempt writes to the SAME doc id across autosaves
+    // (every answer, and on closing the app mid-test) and the final
+    // submit, so the "completed" write can overwrite an earlier
+    // "in_progress" one — that overwrite is a Firestore *update*, not a
+    // create, so update has to be allowed or every real submission gets
+    // silently rejected after the first autosave. See README "Security
+    // note" — there is no real per-user auth here, so like the rest of
+    // this app's rules, this trusts the client.
     match /scores/{doc} {
       allow create: if true;
       allow read: if true;
-      allow update: if false;
+      allow update: if true;
       allow delete: if true;
     }
 
