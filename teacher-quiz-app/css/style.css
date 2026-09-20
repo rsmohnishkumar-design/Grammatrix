@@ -1,31 +1,39 @@
+/* Dark theme. The brand stays navy + gold: navy/maroon/bronze remain the
+   rich colours used for solid fills (buttons, chips, badges), while the
+   "-pale" tokens — which are tinted *backgrounds* — became dark tints,
+   and each one's partner text colour ("-text") became bright so it still
+   reads against them. */
 :root{
-  --ink:#22201b;
-  --muted:#6b6558;
-  --bg:#f8f4e9;
-  --surface:#fff;
-  --line: rgba(201,162,39,0.35);
+  --ink:#f0ead9;
+  --muted:#9aa2b3;
+  --bg:#0c1322;
+  --surface:#18243a;
+  --line: rgba(201,162,39,0.30);
 
   --navy:#14213d;
   --navy-deep:#0d1729;
   --navy-soft:#3b4a72;
-  --navy-pale:#e3e7f0;
+  --navy-pale:#2b3a5c;
+  --navy-text:#e8e3d4;
 
   --gold:#c9a227;
   --gold-soft:#e4cc7c;
-  --gold-pale:#f6ecc9;
-  --gold-text:#8a6c14;
+  --gold-pale:#3b3014;
+  --gold-text:#ecc95e;
 
   --maroon:#7b2d26;
-  --maroon-pale:#f3dedc;
+  --maroon-pale:#3d1f1c;
+  --maroon-text:#f0a79e;
 
   --bronze:#b5651d;
-  --bronze-pale:#f3e2cc;
+  --bronze-pale:#3a2a18;
+  --bronze-text:#e9b277;
 
-  --pale:#f1ecdc;
-  --paleRing:#fbf7ec;
-  --paleSurface:#fcfaf3;
+  --pale:#22304a;
+  --paleRing:#16203a;
+  --paleSurface:#131d30;
 
-  --shadow:0 14px 34px rgba(20,33,61,.16);
+  --shadow:0 14px 34px rgba(0,0,0,.45);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -33,11 +41,11 @@
 html{
   min-height:100%;
   background:
-    radial-gradient(circle at 8% 8%, rgba(20,33,61,.16), transparent 32%),
+    radial-gradient(circle at 8% 8%, rgba(59,74,114,.45), transparent 32%),
     radial-gradient(circle at 92% 18%, rgba(201,162,39,.16), transparent 30%),
-    radial-gradient(circle at 15% 85%, rgba(123,45,38,.10), transparent 34%),
-    radial-gradient(circle at 90% 90%, rgba(201,162,39,.14), transparent 28%),
-    linear-gradient(160deg,#f8f4e9 0%,#f5f0e2 45%,#f8f4e9 100%);
+    radial-gradient(circle at 15% 85%, rgba(123,45,38,.18), transparent 34%),
+    radial-gradient(circle at 90% 90%, rgba(201,162,39,.12), transparent 28%),
+    linear-gradient(160deg,#0c1322 0%,#111a2c 45%,#0a0f1b 100%);
   background-attachment:fixed;
 }
 
@@ -151,7 +159,7 @@ h1,h2,h3{
   display:flex;align-items:center;justify-content:center;
   border-radius:50%;
   border:2px solid var(--gold);
-  color:var(--navy);
+  color:var(--navy-text);
   background:var(--gold-pale);
   font-family:"Fredoka",sans-serif;
   font-weight:800;
@@ -184,15 +192,15 @@ h1,h2,h3{
 }
 
 .live-banner.live{
-  background:linear-gradient(135deg,var(--gold-pale),var(--gold-soft));
+  background:linear-gradient(135deg,var(--gold-pale),#4b3c17);
   color:var(--gold-text);
   border-color:var(--gold);
 }
 
 .live-banner.error{
   background:var(--maroon-pale);
-  color:var(--maroon);
-  border-color:var(--maroon);
+  color:var(--maroon-text);
+  border-color:var(--maroon-text);
 }
 
 .login-card{
@@ -210,12 +218,14 @@ h1,h2,h3{
   box-shadow:0 0 0 8px var(--paleRing), 0 10px 26px rgba(201,162,39,.28);
 }
 
+/* Stays light: the graduation-cap emblem inside it is a navy SVG, so it
+   needs a light gold disc behind it to stay visible. */
 .login-icon{
   font-size:2.6rem;
   width:76px;height:76px;
   display:flex;align-items:center;justify-content:center;
   border-radius:50%;
-  background:linear-gradient(135deg,#f8efd2,var(--gold-pale));
+  background:linear-gradient(135deg,#f8efd2,#e6d296);
   box-shadow:0 10px 24px rgba(201,162,39,.28);
 }
 
@@ -223,7 +233,7 @@ h1,h2,h3{
 
 .login-card h1{
   font-size:2rem;
-  background:linear-gradient(90deg,var(--navy),var(--gold));
+  background:linear-gradient(90deg,var(--ink),var(--gold));
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
@@ -245,7 +255,7 @@ h1,h2,h3{
 .brand-line span:last-child{flex:1;max-width:40px;height:1px;background:var(--line)}
 
 .login-intro{color:var(--muted);font-size:.9rem;margin:14px 0 18px;line-height:1.6}
-.muted-line{color:#9a9284}
+.muted-line{color:#8d94a5}
 
 .muted{color:var(--muted);font-size:.9rem;margin-bottom:14px}
 
@@ -320,21 +330,23 @@ input[type="number"]:focus{
 
 .btn:active{transform:scale(.97)}
 
+/* Gold rather than navy on dark — a navy fill would all but disappear
+   against the dark background. */
 .btn.primary{
-  background:linear-gradient(135deg,var(--navy),var(--navy-deep));
-  color:#fff;
-  box-shadow:0 10px 22px rgba(20,33,61,.35);
+  background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+  color:var(--navy-deep);
+  box-shadow:0 10px 22px rgba(201,162,39,.30);
 }
-.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(20,33,61,.42)}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(201,162,39,.40)}
 
 .btn.secondary{
   background:var(--pale);
-  color:var(--navy);
+  color:var(--navy-text);
 }
-.btn.secondary:hover{background:#eae2c8}
+.btn.secondary:hover{background:#2c3c5c}
 .btn.secondary.active{
-  background:linear-gradient(135deg,var(--navy),var(--navy-deep));
-  color:#fff;
+  background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+  color:var(--navy-deep);
 }
 
 .btn.danger{
@@ -350,14 +362,14 @@ input[type="number"]:focus{
 .btn.warning:hover{transform:translateY(-2px)}
 
 .btn.ghost{background:transparent;color:var(--muted);border:2px solid var(--line)}
-.btn.ghost:hover{border-color:var(--gold);color:var(--navy)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--navy-text)}
 
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 
 .btn-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 
 .status{margin-top:10px;font-size:.85rem;color:var(--muted);font-weight:700}
-.status.error{color:var(--maroon)}
+.status.error{color:var(--maroon-text)}
 .status.success{color:var(--gold-text)}
 
 .app-navbar{
@@ -391,7 +403,7 @@ input[type="number"]:focus{
   font-weight:800;
   font-size:.98rem;
   letter-spacing:.04em;
-  color:var(--navy);
+  color:var(--navy-text);
   line-height:1.1;
 }
 .navbar-subtitle{
@@ -435,7 +447,7 @@ input[type="number"]:focus{
 
 .progress-row span{
   background:var(--pale);
-  color:var(--navy);
+  color:var(--navy-text);
   padding:5px 12px;
   border-radius:999px;
   font-weight:800;
@@ -497,20 +509,20 @@ input[type="number"]:focus{
   width:22px;height:22px;
   border-radius:50%;
   border:2px solid var(--line);
-  background:#fff;
+  background:var(--bg);
   display:flex;
   align-items:center;
   justify-content:center;
   transition:border-color .15s, background .15s, transform .15s;
 }
 .option.selected .option-radio{
-  border-color:var(--navy);
-  background:var(--navy);
+  border-color:var(--gold);
+  background:var(--gold);
   transform:scale(1.08);
 }
 .option.selected .option-radio:after{
   content:"✓";
-  color:#fff;
+  color:var(--navy-deep);
   font-size:.72rem;
   font-weight:900;
 }
@@ -529,17 +541,17 @@ input[type="number"]:focus{
 .option.dim{opacity:.45}
 
 .option.selected{
-  background:linear-gradient(135deg,var(--navy-pale),#cdd6e8)!important;
-  border-color:var(--navy)!important;
+  background:linear-gradient(135deg,var(--navy-pale),#35476e)!important;
+  border-color:var(--gold)!important;
   border-width:3px!important;
-  box-shadow:0 8px 18px rgba(20,33,61,.28);
+  box-shadow:0 8px 18px rgba(201,162,39,.22);
   animation:optionPop .25s ease;
 }
-.option.selected .option-badge{background:var(--navy)!important}
+.option.selected .option-badge{background:var(--gold)!important;color:var(--navy-deep)!important}
 
-.option.correct{background:linear-gradient(135deg,var(--gold-pale),var(--gold-soft))!important;border-color:var(--gold)!important;box-shadow:0 8px 18px rgba(201,162,39,.25);opacity:1!important;animation:optionPop .35s ease}
+.option.correct{background:linear-gradient(135deg,var(--gold-pale),#54431a)!important;border-color:var(--gold)!important;box-shadow:0 8px 18px rgba(201,162,39,.25);opacity:1!important;animation:optionPop .35s ease}
 .option.correct .option-badge{background:var(--gold)!important}
-.option.wrong{background:linear-gradient(135deg,var(--maroon-pale),#e8bdb8)!important;border-color:var(--maroon)!important;opacity:1!important;animation:optionShake .4s ease}
+.option.wrong{background:linear-gradient(135deg,var(--maroon-pale),#542a26)!important;border-color:var(--maroon-text)!important;opacity:1!important;animation:optionShake .4s ease}
 .option.wrong .option-badge{background:var(--maroon)!important}
 .option.idk{font-style:italic;color:var(--muted);border-style:dashed!important;background:var(--paleSurface)!important}
 
@@ -593,7 +605,7 @@ input[type="number"]:focus{
   float:right;
   background:var(--maroon-pale);
   border:0;
-  color:var(--maroon);
+  color:var(--maroon-text);
   cursor:pointer;
   font-weight:900;
   width:26px;height:26px;
@@ -638,7 +650,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
 
 .available-card{
   border:2px solid var(--gold);
-  background:linear-gradient(135deg,var(--gold-pale),var(--gold-soft));
+  background:linear-gradient(135deg,var(--gold-pale),#54431a);
   border-radius:20px;
   padding:20px;
   margin-bottom:16px;
@@ -646,7 +658,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   animation:availPulse 2.2s ease-in-out infinite;
 }
 .available-card h2{color:var(--gold-text);font-size:1.3rem;margin-bottom:6px}
-.available-card p{color:#6b4f12;font-size:.88rem;margin-bottom:4px}
+.available-card p{color:#e2d3a4;font-size:.88rem;margin-bottom:4px}
 @keyframes availPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.35)}50%{box-shadow:0 0 0 10px rgba(201,162,39,0)}}
 
 .attended-list{display:grid;gap:10px;margin-top:4px}
@@ -688,7 +700,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   margin-bottom:10px;
   background:var(--paleSurface);
 }
-.review-item.unanswered{border-color:var(--bronze);background:var(--bronze-pale)}
+.review-item.unanswered{border-color:var(--bronze-text);background:var(--bronze-pale)}
 .review-item .ri-q{font-weight:800;margin-bottom:6px;font-family:"Fredoka",sans-serif;font-size:.95rem}
 .review-item .ri-a{font-size:.88rem;color:var(--muted)}
 .review-item .ri-a strong{color:var(--ink)}
@@ -696,7 +708,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   margin-top:8px;
   background:none;
   border:0;
-  color:var(--navy);
+  color:var(--navy-text);
   font-weight:800;
   font-size:.82rem;
   cursor:pointer;
@@ -713,11 +725,11 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   text-align:left;
 }
 .result-item.correct{background:var(--gold-pale);border-color:var(--gold)}
-.result-item.wrong{background:var(--maroon-pale);border-color:var(--maroon)}
+.result-item.wrong{background:var(--maroon-pale);border-color:var(--maroon-text)}
 .result-item .ri-q{font-weight:800;margin-bottom:6px;font-family:"Fredoka",sans-serif;font-size:.95rem}
 .result-item .ri-line{font-size:.85rem;margin-top:3px}
 .result-item .ri-line.good{color:var(--gold-text);font-weight:800}
-.result-item .ri-line.bad{color:var(--maroon);font-weight:800}
+.result-item .ri-line.bad{color:var(--maroon-text);font-weight:800}
 
 /* ---- Student login: grade + section fields ---- */
 
@@ -745,7 +757,7 @@ select{
   transition:border-color .15s, box-shadow .15s;
   appearance:none;
   -webkit-appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%236b6558' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%239aa2b3' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:right 14px center;
   padding-right:36px;
@@ -755,6 +767,17 @@ select:focus{
   border-color:var(--gold);
   box-shadow:0 0 0 4px rgba(201,162,39,.18);
 }
+
+/* The native dropdown list renders outside the page's styling on most
+   browsers, so it needs its own dark colours or it flashes up white. */
+select option{background:var(--surface);color:var(--ink)}
+
+input::placeholder,
+textarea::placeholder{color:#7f879a;opacity:1}
+
+/* Dark form controls also need the browser's own UI (date pickers,
+   spinners, the file-picker button) switched to its dark variants. */
+input,select,textarea{color-scheme:dark}
 
 /* ---- Teacher dashboard: sidebar + room shell ---- */
 
@@ -825,18 +848,18 @@ select:focus{
   width:26px;height:26px;
   border-radius:50%;
   background:var(--pale);
-  color:var(--navy);
+  color:var(--navy-text);
   display:flex;align-items:center;justify-content:center;
   font-size:.74rem;
   font-weight:800;
 }
 .grade-menu-item:hover{background:var(--pale)}
 .grade-menu-item.active{
-  background:linear-gradient(135deg,var(--navy),var(--navy-deep));
-  color:#fff;
-  box-shadow:0 6px 14px rgba(20,33,61,.28);
+  background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+  color:var(--navy-deep);
+  box-shadow:0 6px 14px rgba(201,162,39,.28);
 }
-.grade-menu-item.active .gmi-badge{background:rgba(255,255,255,.22);color:#fff}
+.grade-menu-item.active .gmi-badge{background:rgba(13,23,41,.20);color:var(--navy-deep)}
 
 .sidebar-stats{
   margin-top:16px;
@@ -848,7 +871,7 @@ select:focus{
 }
 .sidebar-stats strong{
   display:block;
-  color:var(--navy);
+  color:var(--navy-text);
   font-family:"Fredoka",sans-serif;
   font-size:1.4rem;
   line-height:1.3;
@@ -895,7 +918,7 @@ select:focus{
 
 .subject-tag{
   background:var(--pale);
-  color:var(--navy);
+  color:var(--navy-text);
   padding:5px 12px;
   border-radius:999px;
   font-weight:800;
@@ -942,12 +965,12 @@ select:focus{
 }
 .fullscreen-nudge-card p{margin-bottom:14px;font-weight:800;color:var(--ink)}
 
-.leave-warning{color:var(--maroon)!important;font-weight:900!important}
+.leave-warning{color:var(--maroon-text)!important;font-weight:900!important}
 
 .susp-flag{
   margin-left:6px;
   background:var(--bronze-pale);
-  color:var(--bronze);
+  color:var(--bronze-text);
   padding:2px 8px;
   border-radius:999px;
   font-size:.72rem;
