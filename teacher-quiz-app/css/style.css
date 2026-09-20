@@ -18,12 +18,12 @@
 
   --gold:#c9a227;
   --gold-soft:#e4cc7c;
-  --gold-pale:#3b3014;
-  --gold-text:#ecc95e;
+  --gold-pale:#322913;
+  --gold-text:#f0d071;
 
   --maroon:#7b2d26;
-  --maroon-pale:#3d1f1c;
-  --maroon-text:#f0a79e;
+  --maroon-pale:#2f1815;
+  --maroon-text:#f4b3aa;
 
   --bronze:#b5651d;
   --bronze-pale:#3a2a18;
@@ -54,6 +54,15 @@ body{
   color:var(--ink);
   line-height:1.5;
   min-height:100vh;
+
+  /* Light text on a dark background blooms without smoothing. The
+     synthesis rule is a backstop: any weight a font doesn't actually
+     ship gets faked by smearing the strokes, which reads as blurry.
+     Fredoka only goes up to 700, so its headings are set to 700
+     directly below rather than the 800/900 they used to ask for. */
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-synthesis-weight:none;
 }
 
 .page-container{
@@ -162,7 +171,7 @@ h1,h2,h3{
   color:var(--navy-text);
   background:var(--gold-pale);
   font-family:"Fredoka",sans-serif;
-  font-weight:800;
+  font-weight:700;
   font-size:.82rem;
 }
 
@@ -400,7 +409,7 @@ input[type="number"]:focus{
 .navbar-logo svg{display:block}
 .navbar-title{
   font-family:"Fredoka",sans-serif;
-  font-weight:800;
+  font-weight:700;
   font-size:.98rem;
   letter-spacing:.04em;
   color:var(--navy-text);
@@ -590,7 +599,7 @@ input[type="number"]:focus{
   background:var(--paleSurface);
 }
 
-.question-block .qn{font-weight:800;margin-bottom:8px;font-family:"Fredoka",sans-serif}
+.question-block .qn{font-weight:700;margin-bottom:8px;font-family:"Fredoka",sans-serif}
 .question-block .qa{
   font-size:.82rem;
   color:var(--gold-text);
@@ -682,7 +691,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
 .attended-item .ai-date{font-size:.78rem;color:var(--muted)}
 .attended-item .ai-score{
   display:flex;align-items:center;gap:6px;
-  font-weight:900;
+  font-weight:700;
   font-family:"Fredoka",sans-serif;
   background:var(--gold-pale);
   color:var(--gold-text);
@@ -701,7 +710,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
   background:var(--paleSurface);
 }
 .review-item.unanswered{border-color:var(--bronze-text);background:var(--bronze-pale)}
-.review-item .ri-q{font-weight:800;margin-bottom:6px;font-family:"Fredoka",sans-serif;font-size:.95rem}
+.review-item .ri-q{font-weight:700;margin-bottom:6px;font-family:"Fredoka",sans-serif;font-size:.95rem}
 .review-item .ri-a{font-size:.88rem;color:var(--muted)}
 .review-item .ri-a strong{color:var(--ink)}
 .review-item .ri-change{
@@ -726,7 +735,7 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
 }
 .result-item.correct{background:var(--gold-pale);border-color:var(--gold)}
 .result-item.wrong{background:var(--maroon-pale);border-color:var(--maroon-text)}
-.result-item .ri-q{font-weight:800;margin-bottom:6px;font-family:"Fredoka",sans-serif;font-size:.95rem}
+.result-item .ri-q{font-weight:700;margin-bottom:6px;font-family:"Fredoka",sans-serif;font-size:.95rem}
 .result-item .ri-line{font-size:.85rem;margin-top:3px}
 .result-item .ri-line.good{color:var(--gold-text);font-weight:800}
 .result-item .ri-line.bad{color:var(--maroon-text);font-weight:800}
