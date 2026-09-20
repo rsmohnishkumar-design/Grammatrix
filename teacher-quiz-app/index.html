@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=29">
+<link rel="stylesheet" href="css/style.css?v=30">
 </head>
 <body>
 
@@ -95,6 +95,12 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle" id="studentSubtitle">Knowledge &amp; Testing Hub</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-student">🙋 <strong id="studentGreeting"></strong></span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="studentKebabBtn" data-kebab-btn="studentKebabDropdown" aria-label="More options">⋮</button>
+        <div class="kebab-dropdown hidden" id="studentKebabDropdown">
+          <button class="kebab-item" data-report-issue-btn>🐞 Report an issue</button>
+        </div>
+      </div>
       <button class="btn ghost" id="studentLogout">Log out</button>
     </div>
   </header>
@@ -191,6 +197,12 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Knowledge &amp; Testing Hub</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-teacher">🔒 Hidden Room</span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="teacherKebabBtn" data-kebab-btn="teacherKebabDropdown" aria-label="More options">⋮</button>
+        <div class="kebab-dropdown hidden" id="teacherKebabDropdown">
+          <button class="kebab-item" data-report-issue-btn>🐞 Report an issue</button>
+        </div>
+      </div>
       <button class="btn ghost" id="teacherLogout">Log out</button>
     </div>
   </header>
@@ -320,8 +332,14 @@
 
   <div class="page-container-wide">
     <div class="card">
+      <h2>🐞 Reported issues</h2>
+      <p class="muted">Sent from the ⋮ menu in the student and teacher views. Delete one once it's handled.</p>
+      <div id="adminIssuesList" class="admin-list">Loading…</div>
+    </div>
+
+    <div class="card">
       <h2>🏷️ Every room</h2>
-      <p class="muted">Every grade/section/subject room any teacher has opened, across the whole app. Deleting one stops that test for students right away.</p>
+      <p class="muted">Every grade/section/subject room any teacher has opened, across the whole app. Click a room to edit its worksheet directly, or delete it to stop that test for students right away.</p>
       <div id="adminRoomsList" class="admin-list">Loading…</div>
     </div>
 
@@ -340,6 +358,22 @@
   </div>
 </section>
 
+<!-- Shared across the student, teacher and admin views — opened from
+     each one's ⋮ menu. Reports land in the "Reported issues" card in
+     the admin room (login code 2708). -->
+<div class="fullscreen-nudge hidden" id="reportIssueModal">
+  <div class="fullscreen-nudge-card">
+    <h2 style="margin-bottom:10px;text-align:left">🐞 Report an issue</h2>
+    <p class="muted" style="text-align:left;margin-bottom:12px">Tell us what went wrong — this goes straight to the admin.</p>
+    <textarea id="reportIssueText" rows="4" placeholder="What happened?"></textarea>
+    <div id="reportIssueStatus" class="status"></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn ghost" id="reportIssueCancelBtn">Cancel</button>
+      <button class="btn primary" id="reportIssueSubmitBtn">Submit</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
@@ -350,13 +384,14 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=29"></script>
-<script src="js/questionGenerator.js?v=29"></script>
-<script src="js/ocr.js?v=29"></script>
-<script src="js/quiz.js?v=29"></script>
-<script src="js/hiddenRoom.js?v=29"></script>
-<script src="js/admin.js?v=29"></script>
-<script src="js/app.js?v=29"></script>
+<script src="js/firebase-config.js?v=30"></script>
+<script src="js/questionGenerator.js?v=30"></script>
+<script src="js/ocr.js?v=30"></script>
+<script src="js/quiz.js?v=30"></script>
+<script src="js/hiddenRoom.js?v=30"></script>
+<script src="js/admin.js?v=30"></script>
+<script src="js/issues.js?v=30"></script>
+<script src="js/app.js?v=30"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

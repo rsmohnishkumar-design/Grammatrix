@@ -22,6 +22,15 @@ service cloud.firestore {
       allow delete: if true;
     }
 
+    // Bug reports sent from the ⋮ "Report an issue" menu. Read only in
+    // the admin room; deletable once handled.
+    match /issues/{doc} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if false;
+      allow delete: if true;
+    }
+
     // One live quiz document per (grade, section, subject) room, e.g.
     // "g7-sa-biology". See README "Security note" — there is no real
     // per-user auth here, so this is left open for the app to work with

@@ -1027,3 +1027,69 @@ input,select,textarea{color-scheme:dark}
 .admin-row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
 .admin-row-main strong{font-family:"Fredoka",sans-serif}
 .admin-row-main .muted{font-size:.76rem}
+
+.btn.secondary.small{padding:7px 14px;font-size:.78rem;flex-shrink:0}
+.admin-row-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* A room's inline worksheet editor, opened from its "Edit" button. */
+.admin-room-block{margin-bottom:8px}
+.admin-room-block .admin-row{margin-bottom:0}
+.admin-room-editor{
+  background:var(--paleSurface);
+  border:1px solid var(--line);
+  border-top:none;
+  border-radius:0 0 14px 14px;
+  padding:14px 16px;
+  margin-top:-1px;
+}
+.admin-room-editor .manual-form{background:transparent;border:0;padding:0;margin-top:12px}
+
+/* ---- ⋮ menu (student/teacher navbars) ---- */
+
+.kebab-wrap{position:relative}
+.icon-btn{padding:10px 14px;font-size:1.1rem;line-height:1}
+.kebab-dropdown{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  z-index:20;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  padding:6px;
+  min-width:200px;
+}
+.kebab-dropdown.hidden{display:none!important}
+.kebab-item{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:0;
+  border-radius:10px;
+  padding:10px 12px;
+  font:inherit;
+  font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+}
+.kebab-item:hover{background:var(--pale)}
+
+textarea{
+  width:100%;
+  padding:12px 14px;
+  border:2px solid var(--line);
+  border-radius:12px;
+  background:var(--paleSurface);
+  color:var(--ink);
+  font:inherit;
+  margin-bottom:10px;
+  resize:vertical;
+  transition:border-color .15s, box-shadow .15s;
+}
+textarea:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 4px rgba(201,162,39,.18);
+}

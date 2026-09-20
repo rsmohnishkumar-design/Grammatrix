@@ -167,6 +167,7 @@ document.getElementById("adminLogout").addEventListener("click", logout);
 StudentQuiz.init();
 HiddenRoom.init();
 Admin.init();
+IssueReporter.init();
 
 const existing = JSON.parse(localStorage.getItem("tq_user") || "null");
 if (existing) {
