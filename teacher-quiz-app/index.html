@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=30">
+<link rel="stylesheet" href="css/style.css?v=31">
 </head>
 <body>
 
@@ -231,10 +231,10 @@
         <div id="roomPanel" class="hidden">
           <div class="card room-setup-card">
             <h2>🏷️ Room details</h2>
-            <p class="muted">Set the section and subject for this grade's room. Students only see a room once both are filled in.</p>
+            <p class="muted">Set the section(s) and subject for this grade's room — separate multiple sections with commas (e.g. "A, B, C") to send the same worksheet to all of them at once. Students only see a room once both are filled in.</p>
             <div class="room-setup-row">
               <div><label class="field-label" for="roomGradeDisplay">Grade</label><input id="roomGradeDisplay" disabled></div>
-              <div><label class="field-label" for="roomSectionInput">Section</label><input id="roomSectionInput" placeholder="e.g. A" maxlength="10"></div>
+              <div><label class="field-label" for="roomSectionInput">Section(s)</label><input id="roomSectionInput" placeholder="e.g. A or A, B, C" maxlength="60"></div>
               <div><label class="field-label" for="roomSubjectInput">Subject</label><input id="roomSubjectInput" placeholder="e.g. Biology" maxlength="40"></div>
             </div>
             <div id="roomStatus" class="status"></div>
@@ -384,14 +384,14 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=30"></script>
-<script src="js/questionGenerator.js?v=30"></script>
-<script src="js/ocr.js?v=30"></script>
-<script src="js/quiz.js?v=30"></script>
-<script src="js/hiddenRoom.js?v=30"></script>
-<script src="js/admin.js?v=30"></script>
-<script src="js/issues.js?v=30"></script>
-<script src="js/app.js?v=30"></script>
+<script src="js/firebase-config.js?v=31"></script>
+<script src="js/questionGenerator.js?v=31"></script>
+<script src="js/ocr.js?v=31"></script>
+<script src="js/quiz.js?v=31"></script>
+<script src="js/hiddenRoom.js?v=31"></script>
+<script src="js/admin.js?v=31"></script>
+<script src="js/issues.js?v=31"></script>
+<script src="js/app.js?v=31"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

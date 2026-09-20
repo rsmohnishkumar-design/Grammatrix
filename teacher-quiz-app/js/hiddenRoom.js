@@ -7,8 +7,19 @@ function makeRoomId(grade, section, subject) {
   return `g${clean(grade)}-s${clean(section)}-${clean(subject)}`;
 }
 
+// section can be a single string (an individual room, as admin.js and
+// students always deal with) or an array (the teacher's room editor,
+// which can target several sections of the same grade+subject at once).
 function roomLabel(grade, section, subject) {
-  return `Grade ${grade} • Section ${String(section).toUpperCase()} • ${subject}`;
+  const sections = Array.isArray(section) ? section : [section];
+  const word = sections.length > 1 ? "Sections" : "Section";
+  return `Grade ${grade} • ${word} ${sections.map((s) => String(s).toUpperCase()).join(", ")} • ${subject}`;
+}
+
+// "A, B, C" -> ["A", "B", "C"] — trims each piece and drops empties, so
+// stray commas/spaces ("A,,B" or "A, B,") don't produce blank sections.
+function parseSections(raw) {
+  return String(raw || "").split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 const HiddenRoom = {
@@ -17,9 +28,12 @@ const HiddenRoom = {
   els: {},
 
   grade: null,
-  section: "",
+  section: "", // raw text as typed, e.g. "A, B, C" — may be several sections
+  sections: [], // parsed individual sections
   subject: "",
-  roomId: null,
+  roomId: null, // a *group* key for local draft caching + subscriptions
+                // only — never a real Firestore doc id when sections.length > 1;
+                // each section gets its own real room doc, see sendToChildren.
 
   liveUnsub: null,
   loginsUnsub: null,
@@ -125,11 +139,12 @@ const HiddenRoom = {
     if (!this.grade) return;
     this.section = this.els.roomSectionInput.value.trim();
     this.subject = this.els.roomSubjectInput.value.trim();
+    this.sections = parseSections(this.section);
 
-    if (!this.section || !this.subject) {
+    if (!this.sections.length || !this.subject) {
       this.roomId = null;
       this.els.roomContent.classList.add("hidden");
-      this.els.roomStatus.textContent = "Enter a section and subject above to open this room — students won't see anything until both are filled in.";
+      this.els.roomStatus.textContent = "Enter one or more sections (comma-separated, e.g. A, B, C) and a subject above to open this room — students won't see anything until both are filled in.";
       this.els.roomStatus.className = "status";
       this.unsubscribeRoom();
       return;
@@ -143,7 +158,7 @@ const HiddenRoom = {
       localStorage.setItem(`tq_grade_pref_${this.grade}`, JSON.stringify({ section: this.section, subject: this.subject }));
     } catch (err) { /* ignore */ }
 
-    this.els.roomStatus.textContent = `🏷️ ${roomLabel(this.grade, this.section, this.subject)}`;
+    this.els.roomStatus.textContent = `🏷️ ${roomLabel(this.grade, this.sections, this.subject)}`;
     this.els.roomStatus.className = "status success";
     this.els.roomContent.classList.remove("hidden");
 
@@ -343,8 +358,13 @@ const HiddenRoom = {
     }
   },
 
+  // One real Firestore room doc PER section, all carrying the same
+  // questions — this is what lets a teacher type "A, B, C, D" once
+  // instead of rebuilding the same worksheet four separate times. Each
+  // student still only ever reads the single doc for their own section
+  // (see StudentQuiz.subscribeRooms), so nothing on their side changes.
   async sendToChildren() {
-    if (!this.roomId) return;
+    if (!this.roomId || !this.sections.length) return;
     if (!this.questions.length) {
       this.els.sendStatus.textContent = "Add or generate at least one question first.";
       this.els.sendStatus.className = "status error";
@@ -352,14 +372,16 @@ const HiddenRoom = {
     }
     this.els.sendBtn.disabled = true;
     try {
-      await db.collection("rooms").doc(this.roomId).set({
-        grade: this.grade,
-        section: this.section,
-        subject: this.subject,
-        questions: this.questions,
-        sentAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-      this.els.sendStatus.textContent = `Sent ${this.questions.length} questions! ${roomLabel(this.grade, this.section, this.subject)} students will see it now.`;
+      await Promise.all(this.sections.map((sec) =>
+        db.collection("rooms").doc(makeRoomId(this.grade, sec, this.subject)).set({
+          grade: this.grade,
+          section: sec,
+          subject: this.subject,
+          questions: this.questions,
+          sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+        })
+      ));
+      this.els.sendStatus.textContent = `Sent ${this.questions.length} questions! ${roomLabel(this.grade, this.sections, this.subject)} students will see it now.`;
       this.els.sendStatus.className = "status success";
     } catch (err) {
       console.error(err);
@@ -371,10 +393,12 @@ const HiddenRoom = {
   },
 
   async clearLiveQuiz() {
-    if (!this.roomId) return;
+    if (!this.roomId || !this.sections.length) return;
     this.els.clearLiveBtn.disabled = true;
     try {
-      await db.collection("rooms").doc(this.roomId).delete();
+      await Promise.all(this.sections.map((sec) =>
+        db.collection("rooms").doc(makeRoomId(this.grade, sec, this.subject)).delete()
+      ));
       this.els.sendStatus.textContent = "Live test stopped — students will stop seeing it.";
       this.els.sendStatus.className = "status";
     } catch (err) {
@@ -389,12 +413,27 @@ const HiddenRoom = {
   listenLiveStatus() {
     if (this.liveUnsub) this.liveUnsub();
     const roomId = this.roomId;
-    this.liveUnsub = db.collection("rooms").doc(roomId).onSnapshot(
-      (doc) => {
+    const grade = this.grade;
+    const subject = this.subject;
+    const sections = this.sections;
+    const wantedIds = sections.map((sec) => makeRoomId(grade, sec, subject));
+
+    // One doc per section now, so "live" means checking every one of
+    // them rather than a single doc — a partial send (e.g. one section's
+    // write failed) is called out by name instead of silently looking
+    // identical to a full one.
+    this.liveUnsub = db.collection("rooms").onSnapshot(
+      (snap) => {
         if (roomId !== this.roomId) return; // stale listener from a room we've since left
         const banner = this.els.liveStatusBanner;
-        if (doc.exists && Array.isArray(doc.data().questions) && doc.data().questions.length) {
-          banner.textContent = `🟢 Live now — ${doc.data().questions.length} questions are with ${roomLabel(this.grade, this.section, this.subject)}`;
+        const liveDocs = snap.docs.filter((d) => wantedIds.includes(d.id) && Array.isArray(d.data().questions) && d.data().questions.length);
+        if (liveDocs.length) {
+          const n = liveDocs[0].data().questions.length;
+          const liveSections = liveDocs.map((d) => d.data().section);
+          const label = liveDocs.length === wantedIds.length
+            ? roomLabel(grade, sections, subject)
+            : roomLabel(grade, liveSections, subject) + ` (${liveDocs.length}/${wantedIds.length} sections)`;
+          banner.textContent = `🟢 Live now — ${n} questions are with ${label}`;
           banner.className = "live-banner live";
         } else {
           banner.textContent = "⚪ No live test right now for this room";
@@ -414,26 +453,32 @@ const HiddenRoom = {
     if (this.scoresUnsub) this.scoresUnsub();
     const roomId = this.roomId;
     const grade = this.grade;
-    const section = this.section;
+    const sections = this.sections;
+    const sectionsLower = sections.map((s) => s.toLowerCase());
+    const multiSection = sections.length > 1;
+    const wantedIds = sections.map((sec) => makeRoomId(grade, sec, this.subject));
 
     this.loginsUnsub = db.collection("logins").orderBy("ts", "desc").limit(100).onSnapshot((snap) => {
       if (roomId !== this.roomId) return;
       const rows = snap.docs
         .map((d) => d.data())
-        .filter((r) => r.role === "teacher" || (String(r.grade) === String(grade) && String(r.section || "").toLowerCase() === String(section).toLowerCase()));
+        .filter((r) => r.role === "teacher" || (String(r.grade) === String(grade) && sectionsLower.includes(String(r.section || "").toLowerCase())));
       if (!rows.length) {
-        this.els.loginsTable.innerHTML = '<p class="muted">No logins yet for this grade &amp; section.</p>';
+        this.els.loginsTable.innerHTML = '<p class="muted">No logins yet for this grade &amp; section(s).</p>';
         return;
       }
       const html = rows
-        .map((r) => `<tr><td>${escapeHtml(r.username || "")}</td><td>${r.role || ""}</td></tr>`)
+        .map((r) => {
+          const sectionTag = multiSection && r.role === "student" ? ` <span class="subject-tag">${escapeHtml(String(r.section || "").toUpperCase())}</span>` : "";
+          return `<tr><td>${escapeHtml(r.username || "")}${sectionTag}</td><td>${r.role || ""}</td></tr>`;
+        })
         .join("");
       this.els.loginsTable.innerHTML = `<table class="data"><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody>${html}</tbody></table>`;
     });
 
     this.scoresUnsub = db.collection("scores").orderBy("ts", "desc").limit(100).onSnapshot((snap) => {
       if (roomId !== this.roomId) return;
-      const rows = snap.docs.map((d) => d.data()).filter((r) => r.roomId === roomId);
+      const rows = snap.docs.map((d) => d.data()).filter((r) => wantedIds.includes(r.roomId));
       if (!rows.length) {
         this.els.scoresTable.innerHTML = '<p class="muted">No scores yet for this room.</p>';
         return;
@@ -449,7 +494,8 @@ const HiddenRoom = {
           const inProgress = r.status === "in_progress"
             ? ` <span class="susp-flag" title="Closed the app without submitting or using Leave — this is their score as of the last question they answered">⏳ Didn't finish</span>`
             : "";
-          return `<tr><td>${escapeHtml(r.username || "")}</td><td>${r.score}/${r.total}${flag}${left}${inProgress}</td></tr>`;
+          const sectionTag = multiSection ? ` <span class="subject-tag">${escapeHtml(String(r.section || "").toUpperCase())}</span>` : "";
+          return `<tr><td>${escapeHtml(r.username || "")}${sectionTag}</td><td>${r.score}/${r.total}${flag}${left}${inProgress}</td></tr>`;
         })
         .join("");
       this.els.scoresTable.innerHTML = `<table class="data"><thead><tr><th>Name</th><th>Score</th></tr></thead><tbody>${html}</tbody></table>`;
