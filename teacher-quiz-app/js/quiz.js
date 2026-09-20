@@ -42,6 +42,17 @@ function sanitizeForId(s) {
   return String(s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "x";
 }
 
+// Formats a due-date value (Timestamp/ISO string/Date) for an
+// <input type="datetime-local">, in the browser's own local time —
+// empty string if there's no date to show.
+function toDatetimeLocalValue(val) {
+  const ms = toMillis(val);
+  if (!ms) return "";
+  const d = new Date(ms);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function subjectIcon(subject) {
   const s = (subject || "").toLowerCase();
   if (s.includes("bio")) return "🧬";
@@ -252,16 +263,30 @@ const StudentQuiz = {
   subscribeRooms() {
     if (this.roomsUnsub) this.roomsUnsub();
     this.roomsUnsub = db.collection("rooms").onSnapshot((snap) => {
-      const user = JSON.parse(localStorage.getItem("tq_user") || "{}");
-      this.liveRooms = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
-        .filter((r) => Array.isArray(r.questions) && r.questions.length)
-        .filter((r) => user.role === "student" && String(r.grade) === String(user.grade) && String(r.section || "").toLowerCase() === String(user.section || "").toLowerCase());
-      // Only auto-refresh the highlight while idle at home — never yank
-      // someone out of a test they're actively taking, reviewing, or
-      // just finished looking at.
-      if (this.state === "home") this.showAvailable();
+      this.rawRoomDocs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      this.recomputeLiveRooms();
     });
+    // onSnapshot only fires on a Firestore write — a due date can pass
+    // purely because the clock ticked, with nothing else changing, so
+    // re-apply the filter on a timer too or an expired test would keep
+    // showing "Start Test" until something unrelated happens to write.
+    if (!this.dueDateTicker) {
+      this.dueDateTicker = setInterval(() => this.recomputeLiveRooms(), 60000);
+    }
+  },
+
+  recomputeLiveRooms() {
+    const user = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    this.liveRooms = (this.rawRoomDocs || [])
+      .filter((r) => Array.isArray(r.questions) && r.questions.length)
+      .filter((r) => user.role === "student" && String(r.grade) === String(user.grade) && String(r.section || "").toLowerCase() === String(user.section || "").toLowerCase())
+      // A room past its due date stays in Firestore (so its history and
+      // scores aren't lost) but stops being offered to students.
+      .filter((r) => !r.dueAt || toMillis(r.dueAt) > Date.now());
+    // Only auto-refresh the highlight while idle at home — never yank
+    // someone out of a test they're actively taking, reviewing, or
+    // just finished looking at.
+    if (this.state === "home") this.showAvailable();
   },
 
   showHome() {

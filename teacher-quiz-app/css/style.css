@@ -1047,7 +1047,33 @@ input,select,textarea{color-scheme:dark}
 /* ---- ⋮ menu (student/teacher navbars) ---- */
 
 .kebab-wrap{position:relative}
-.icon-btn{padding:10px 14px;font-size:1.1rem;line-height:1}
+.icon-btn{padding:10px 14px;font-size:1.1rem;line-height:1;position:relative}
+
+.bell-badge{
+  position:absolute;
+  top:2px;right:2px;
+  min-width:16px;height:16px;
+  padding:0 3px;
+  border-radius:999px;
+  background:var(--maroon);
+  color:#fff;
+  font-size:.62rem;
+  font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.bell-badge.hidden{display:none!important}
+
+.notif-panel{min-width:260px;max-width:320px;max-height:340px;overflow-y:auto}
+.notif-item{
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:.84rem;
+  font-weight:700;
+  color:var(--ink);
+  line-height:1.4;
+}
+.notif-item + .notif-item{margin-top:2px}
 .kebab-dropdown{
   position:absolute;
   top:calc(100% + 8px);

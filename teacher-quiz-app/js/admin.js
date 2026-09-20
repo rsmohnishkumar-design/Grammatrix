@@ -13,6 +13,7 @@ const Admin = {
   rooms: [],
   editingRoomId: null,
   editQuestions: [],
+  editDueValue: "",
 
   init() {
     this.els = {
@@ -23,6 +24,9 @@ const Admin = {
     };
 
     this.els.roomsList.addEventListener("click", (e) => this.handleRoomsClick(e));
+    this.els.roomsList.addEventListener("input", (e) => {
+      if (e.target.id === "adminEditDue") this.editDueValue = e.target.value;
+    });
     this.els.loginsList.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-delete-login]");
       if (!btn) return;
@@ -57,6 +61,7 @@ const Admin = {
     if (this.issuesUnsub) { this.issuesUnsub(); this.issuesUnsub = null; }
     this.editingRoomId = null;
     this.editQuestions = [];
+    this.editDueValue = "";
   },
 
   handleRoomsClick(e) {
@@ -87,16 +92,25 @@ const Admin = {
       this.els.roomsList.innerHTML = '<p class="muted">No rooms yet.</p>';
       return;
     }
+    const now = Date.now();
     this.els.roomsList.innerHTML = this.rooms.map((r) => {
       const n = Array.isArray(r.questions) ? r.questions.length : 0;
       const sent = r.sentAt && r.sentAt.toDate ? r.sentAt.toDate().toLocaleString() : "—";
       const isEditing = this.editingRoomId === r.id;
+      const dueMs = toMillis(r.dueAt);
+      let dueBit = "";
+      if (dueMs) {
+        const dueText = new Date(dueMs).toLocaleString();
+        if (dueMs <= now) dueBit = ` &bull; <span class="susp-flag" title="Students can no longer see this test">🔒 Expired ${escapeHtml(dueText)}</span>`;
+        else if (dueMs - now <= 24 * 60 * 60 * 1000) dueBit = ` &bull; <span class="susp-flag" title="Closes within 24 hours">⏰ Due ${escapeHtml(dueText)}</span>`;
+        else dueBit = ` &bull; due ${escapeHtml(dueText)}`;
+      }
       return `
         <div class="admin-room-block">
           <div class="admin-row">
             <div class="admin-row-main">
               <strong>${escapeHtml(roomLabel(r.grade, r.section, r.subject))}</strong>
-              <span class="muted">${n} question${n === 1 ? "" : "s"} &bull; sent ${escapeHtml(sent)}</span>
+              <span class="muted">${n} question${n === 1 ? "" : "s"} &bull; sent ${escapeHtml(sent)}${dueBit}</span>
             </div>
             <div class="admin-row-actions">
               <button class="btn secondary small" data-edit-room="${r.id}">${isEditing ? "✕ Close" : "✏️ Edit"}</button>
@@ -112,10 +126,12 @@ const Admin = {
     if (this.editingRoomId === roomId) {
       this.editingRoomId = null;
       this.editQuestions = [];
+      this.editDueValue = "";
     } else {
       const room = this.rooms.find((r) => r.id === roomId);
       this.editingRoomId = roomId;
       this.editQuestions = room && Array.isArray(room.questions) ? JSON.parse(JSON.stringify(room.questions)) : [];
+      this.editDueValue = room ? toDatetimeLocalValue(room.dueAt) : "";
     }
     this.renderRoomsList();
   },
@@ -147,6 +163,10 @@ const Admin = {
           <input id="adminEditWrong3" placeholder="e.g. Momentum">
           <div class="btn-row">
             <button class="btn secondary" data-admin-add-q>➕ Add question</button>
+          </div>
+          <label class="field-label" for="adminEditDue" style="margin-top:12px">Due date (optional)</label>
+          <input type="datetime-local" id="adminEditDue" value="${this.editDueValue}">
+          <div class="btn-row">
             <button class="btn primary" data-admin-save-edit>💾 Save changes</button>
           </div>
           <div id="adminEditStatus" class="status"></div>
@@ -185,10 +205,12 @@ const Admin = {
         section: room.section,
         subject: room.subject,
         questions: this.editQuestions,
+        dueAt: this.editDueValue ? new Date(this.editDueValue) : null,
         sentAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       this.editingRoomId = null;
       this.editQuestions = [];
+      this.editDueValue = "";
       this.renderRoomsList();
     } catch (err) {
       console.error(err);

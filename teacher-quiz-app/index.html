@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=31">
+<link rel="stylesheet" href="css/style.css?v=32">
 </head>
 <body>
 
@@ -95,6 +95,10 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle" id="studentSubtitle">Knowledge &amp; Testing Hub</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-student">🙋 <strong id="studentGreeting"></strong></span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="studentBellBtn" data-kebab-btn="studentBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="studentBellBadge"></span></button>
+        <div class="kebab-dropdown notif-panel hidden" id="studentBellPanel"></div>
+      </div>
       <div class="kebab-wrap">
         <button class="btn ghost icon-btn" id="studentKebabBtn" data-kebab-btn="studentKebabDropdown" aria-label="More options">⋮</button>
         <div class="kebab-dropdown hidden" id="studentKebabDropdown">
@@ -198,6 +202,10 @@
     <div class="navbar-right">
       <span class="chip chip-teacher">🔒 Hidden Room</span>
       <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="teacherBellBtn" data-kebab-btn="teacherBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="teacherBellBadge"></span></button>
+        <div class="kebab-dropdown notif-panel hidden" id="teacherBellPanel"></div>
+      </div>
+      <div class="kebab-wrap">
         <button class="btn ghost icon-btn" id="teacherKebabBtn" data-kebab-btn="teacherKebabDropdown" aria-label="More options">⋮</button>
         <div class="kebab-dropdown hidden" id="teacherKebabDropdown">
           <button class="kebab-item" data-report-issue-btn>🐞 Report an issue</button>
@@ -236,6 +244,15 @@
               <div><label class="field-label" for="roomGradeDisplay">Grade</label><input id="roomGradeDisplay" disabled></div>
               <div><label class="field-label" for="roomSectionInput">Section(s)</label><input id="roomSectionInput" placeholder="e.g. A or A, B, C" maxlength="60"></div>
               <div><label class="field-label" for="roomSubjectInput">Subject</label><input id="roomSubjectInput" placeholder="e.g. Biology" maxlength="40"></div>
+            </div>
+            <div class="room-setup-row">
+              <div>
+                <label class="field-label" for="roomDueInput">Due date (optional)</label>
+                <input type="datetime-local" id="roomDueInput">
+              </div>
+              <div style="display:flex;align-items:flex-end">
+                <button type="button" class="btn secondary" id="updateDueBtn" style="width:100%">🗓️ Update due date</button>
+              </div>
             </div>
             <div id="roomStatus" class="status"></div>
           </div>
@@ -326,6 +343,10 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Admin Overview</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-teacher">🛡️ Admin</span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="adminBellBtn" data-kebab-btn="adminBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="adminBellBadge"></span></button>
+        <div class="kebab-dropdown notif-panel hidden" id="adminBellPanel"></div>
+      </div>
       <button class="btn ghost" id="adminLogout">Log out</button>
     </div>
   </header>
@@ -384,14 +405,15 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=31"></script>
-<script src="js/questionGenerator.js?v=31"></script>
-<script src="js/ocr.js?v=31"></script>
-<script src="js/quiz.js?v=31"></script>
-<script src="js/hiddenRoom.js?v=31"></script>
-<script src="js/admin.js?v=31"></script>
-<script src="js/issues.js?v=31"></script>
-<script src="js/app.js?v=31"></script>
+<script src="js/firebase-config.js?v=32"></script>
+<script src="js/questionGenerator.js?v=32"></script>
+<script src="js/ocr.js?v=32"></script>
+<script src="js/quiz.js?v=32"></script>
+<script src="js/hiddenRoom.js?v=32"></script>
+<script src="js/admin.js?v=32"></script>
+<script src="js/issues.js?v=32"></script>
+<script src="js/notifications.js?v=32"></script>
+<script src="js/app.js?v=32"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

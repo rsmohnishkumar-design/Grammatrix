@@ -48,6 +48,8 @@ const HiddenRoom = {
       roomGradeDisplay: document.getElementById("roomGradeDisplay"),
       roomSectionInput: document.getElementById("roomSectionInput"),
       roomSubjectInput: document.getElementById("roomSubjectInput"),
+      roomDueInput: document.getElementById("roomDueInput"),
+      updateDueBtn: document.getElementById("updateDueBtn"),
       roomStatus: document.getElementById("roomStatus"),
       roomContent: document.getElementById("roomContent"),
       sidebarStats: document.getElementById("sidebarStats"),
@@ -85,6 +87,7 @@ const HiddenRoom = {
     this.els.roomSectionInput.addEventListener("blur", () => this.updateRoom());
     this.els.roomSubjectInput.addEventListener("blur", () => this.updateRoom());
 
+    this.els.updateDueBtn.addEventListener("click", () => this.updateDueDate());
     this.els.generateBtn.addEventListener("click", () => this.handleGenerate());
     this.els.modeListBtn.addEventListener("click", () => this.setMode("list"));
     this.els.modeInteractiveBtn.addEventListener("click", () => this.setMode("interactive"));
@@ -170,9 +173,59 @@ const HiddenRoom = {
     this.els.ocrStatus.className = "status";
     this.els.sendStatus.textContent = "";
     this.els.sendStatus.className = "status";
+    this.els.roomDueInput.value = "";
 
     this.listenLiveStatus();
     this.listenScoreboard();
+    this.loadDueDate();
+  },
+
+  // Shows whatever due date is currently live for this room (from its
+  // first section — sendToChildren/updateDueDate always set the same
+  // one across every section together) so the teacher sees what's
+  // already set rather than a blank field that looks like "no due date".
+  async loadDueDate() {
+    const roomId = this.roomId;
+    if (!this.sections.length) return;
+    try {
+      const doc = await db.collection("rooms").doc(makeRoomId(this.grade, this.sections[0], this.subject)).get();
+      if (roomId !== this.roomId) return; // switched rooms while this was in flight
+      const data = doc.exists ? doc.data() : null;
+      this.els.roomDueInput.value = data && data.dueAt ? toDatetimeLocalValue(data.dueAt) : "";
+    } catch (err) {
+      console.warn("Could not load due date:", err);
+    }
+  },
+
+  // Updates the due date on every section's room doc WITHOUT touching
+  // its questions or sentAt — lets a teacher extend/shorten a deadline
+  // without resending the whole worksheet.
+  async updateDueDate() {
+    if (!this.sections.length) return;
+    const dueAtValue = this.els.roomDueInput.value ? new Date(this.els.roomDueInput.value) : null;
+    this.els.updateDueBtn.disabled = true;
+    try {
+      const results = await Promise.all(this.sections.map(async (sec) => {
+        const ref = db.collection("rooms").doc(makeRoomId(this.grade, sec, this.subject));
+        const doc = await ref.get();
+        if (!doc.exists) return false; // nothing live for this section yet
+        await ref.set({ ...doc.data(), dueAt: dueAtValue });
+        return true;
+      }));
+      if (results.some(Boolean)) {
+        this.els.sendStatus.textContent = dueAtValue ? "Due date updated." : "Due date cleared — this test won't expire.";
+        this.els.sendStatus.className = "status success";
+      } else {
+        this.els.sendStatus.textContent = "Nothing is live for this room yet — send it to children first.";
+        this.els.sendStatus.className = "status error";
+      }
+    } catch (err) {
+      console.error(err);
+      this.els.sendStatus.textContent = "Could not update the due date.";
+      this.els.sendStatus.className = "status error";
+    } finally {
+      this.els.updateDueBtn.disabled = false;
+    }
   },
 
   unsubscribeRoom() {
@@ -371,6 +424,7 @@ const HiddenRoom = {
       return;
     }
     this.els.sendBtn.disabled = true;
+    const dueAtValue = this.els.roomDueInput.value ? new Date(this.els.roomDueInput.value) : null;
     try {
       await Promise.all(this.sections.map((sec) =>
         db.collection("rooms").doc(makeRoomId(this.grade, sec, this.subject)).set({
@@ -378,10 +432,12 @@ const HiddenRoom = {
           section: sec,
           subject: this.subject,
           questions: this.questions,
+          dueAt: dueAtValue,
           sentAt: firebase.firestore.FieldValue.serverTimestamp(),
         })
       ));
-      this.els.sendStatus.textContent = `Sent ${this.questions.length} questions! ${roomLabel(this.grade, this.sections, this.subject)} students will see it now.`;
+      const dueBit = dueAtValue ? ` Due ${dueAtValue.toLocaleString()}.` : "";
+      this.els.sendStatus.textContent = `Sent ${this.questions.length} questions! ${roomLabel(this.grade, this.sections, this.subject)} students will see it now.${dueBit}`;
       this.els.sendStatus.className = "status success";
     } catch (err) {
       console.error(err);
@@ -418,27 +474,42 @@ const HiddenRoom = {
     const sections = this.sections;
     const wantedIds = sections.map((sec) => makeRoomId(grade, sec, subject));
 
+    const render = (docs) => {
+      if (roomId !== this.roomId) return; // stale listener from a room we've since left
+      const banner = this.els.liveStatusBanner;
+      const sectionDocs = docs.filter((d) => wantedIds.includes(d.id) && Array.isArray(d.data.questions) && d.data.questions.length);
+      const now = Date.now();
+      const notExpired = sectionDocs.filter((d) => !d.data.dueAt || toMillis(d.data.dueAt) > now);
+      const expired = sectionDocs.filter((d) => d.data.dueAt && toMillis(d.data.dueAt) <= now);
+
+      if (notExpired.length) {
+        const n = notExpired[0].data.questions.length;
+        const liveSections = notExpired.map((d) => d.data.section);
+        const label = notExpired.length === wantedIds.length
+          ? roomLabel(grade, sections, subject)
+          : roomLabel(grade, liveSections, subject) + ` (${notExpired.length}/${wantedIds.length} sections)`;
+        const due = notExpired[0].data.dueAt;
+        const dueBit = due ? ` — due ${new Date(toMillis(due)).toLocaleString()}` : "";
+        banner.textContent = `🟢 Live now — ${n} questions are with ${label}${dueBit}`;
+        banner.className = "live-banner live";
+      } else if (expired.length) {
+        const dueBit = new Date(toMillis(expired[0].data.dueAt)).toLocaleString();
+        banner.textContent = `🔒 Expired — was due ${dueBit}. Reset questions and send again to make it available.`;
+        banner.className = "live-banner error";
+      } else {
+        banner.textContent = "⚪ No live test right now for this room";
+        banner.className = "live-banner";
+      }
+    };
+
     // One doc per section now, so "live" means checking every one of
     // them rather than a single doc — a partial send (e.g. one section's
     // write failed) is called out by name instead of silently looking
     // identical to a full one.
     this.liveUnsub = db.collection("rooms").onSnapshot(
       (snap) => {
-        if (roomId !== this.roomId) return; // stale listener from a room we've since left
-        const banner = this.els.liveStatusBanner;
-        const liveDocs = snap.docs.filter((d) => wantedIds.includes(d.id) && Array.isArray(d.data().questions) && d.data().questions.length);
-        if (liveDocs.length) {
-          const n = liveDocs[0].data().questions.length;
-          const liveSections = liveDocs.map((d) => d.data().section);
-          const label = liveDocs.length === wantedIds.length
-            ? roomLabel(grade, sections, subject)
-            : roomLabel(grade, liveSections, subject) + ` (${liveDocs.length}/${wantedIds.length} sections)`;
-          banner.textContent = `🟢 Live now — ${n} questions are with ${label}`;
-          banner.className = "live-banner live";
-        } else {
-          banner.textContent = "⚪ No live test right now for this room";
-          banner.className = "live-banner";
-        }
+        this.lastRoomsSnapDocs = snap.docs.map((d) => ({ id: d.id, data: d.data() }));
+        render(this.lastRoomsSnapDocs);
       },
       (err) => {
         console.error(err);
@@ -446,6 +517,14 @@ const HiddenRoom = {
         this.els.liveStatusBanner.className = "live-banner error";
       }
     );
+
+    // Re-render on a timer too — the room can cross its due date with no
+    // new Firestore write to trigger a fresh snapshot otherwise.
+    if (!this.liveStatusTicker) {
+      this.liveStatusTicker = setInterval(() => {
+        if (this.lastRoomsSnapDocs) render(this.lastRoomsSnapDocs);
+      }, 60000);
+    }
   },
 
   listenScoreboard() {

@@ -78,6 +78,12 @@ function routeTo(user) {
     StudentQuiz.subscribeRooms();
     StudentQuiz.showHome();
   }
+  // Notifications.init() already has the latest "rooms" snapshot by
+  // now (it subscribes at page load), but it computed its list before
+  // anyone had logged in — recompute now that the role/grade/section
+  // are known, instead of waiting for its own 60s tick or the next
+  // unrelated Firestore write.
+  Notifications.render();
 }
 
 function logout() {
@@ -168,6 +174,7 @@ StudentQuiz.init();
 HiddenRoom.init();
 Admin.init();
 IssueReporter.init();
+Notifications.init();
 
 const existing = JSON.parse(localStorage.getItem("tq_user") || "null");
 if (existing) {
