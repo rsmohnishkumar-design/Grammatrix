@@ -438,22 +438,27 @@ const StudentQuiz = {
       this.els.noTestCard.classList.add("hidden");
       this.els.availableList.innerHTML = this.liveRooms.map((r) => {
         const n = r.questions.length;
-        // A finished attempt only counts against THIS room instance: if
-        // the teacher reset and re-sent the same subject, r.sentAt moves
-        // forward, so an older completed/left-early score (from before
-        // that resend) no longer hides "Start Test" for the new one.
+        // Any attempt at all — finished normally, left early, or just
+        // autosaved because they closed the app without either — counts
+        // as already attended, only against THIS room instance: if the
+        // teacher reset and re-sent the same subject, r.sentAt moves
+        // forward, so an older attempt (from before that resend) no
+        // longer hides "Start Test" for the new one.
         const roomSentMs = toMillis(r.sentAt);
-        const finished = this.myScoresForClass.find((s) =>
-          s.roomId === r.id &&
-          (s.status === "completed" || s.status === "left_early" || s.leftEarly) &&
-          toMillis(s.ts) >= roomSentMs
+        const attempt = this.myScoresForClass.find((s) =>
+          s.roomId === r.id && toMillis(s.ts) >= roomSentMs
         );
-        if (finished) {
+        if (attempt) {
+          const label = attempt.status === "in_progress"
+            ? `⏳ You closed the app before finishing — saved score ${attempt.score}/${attempt.total}.`
+            : attempt.status === "left_early" || attempt.leftEarly
+              ? `🚪 You left early — saved score ${attempt.score}/${attempt.total}.`
+              : `✅ Completed — you scored ${attempt.score}/${attempt.total}.`;
           return `
             <div class="card available-card completed">
               <div class="subject-icon">${subjectIcon(r.subject)}</div>
               <h2>${escapeHtml(r.subject)}</h2>
-              <p>✅ Completed — you scored ${finished.score}/${finished.total}.</p>
+              <p>${label}</p>
               <div class="btn-row" style="justify-content:center">
                 <button class="btn secondary" data-view-score-room="${r.id}">View result</button>
               </div>
