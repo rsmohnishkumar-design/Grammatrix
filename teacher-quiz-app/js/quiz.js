@@ -27,6 +27,21 @@ function renderResultBreakdown(container, items) {
   });
 }
 
+// Reads a Firestore Timestamp (has toMillis/toDate), the mock DB's plain
+// ISO string (a real Timestamp round-tripped through JSON), or any other
+// date-like value, and always returns milliseconds (0 if unreadable).
+function toMillis(val) {
+  if (!val) return 0;
+  if (typeof val.toMillis === "function") return val.toMillis();
+  if (typeof val.toDate === "function") return val.toDate().getTime();
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+function sanitizeForId(s) {
+  return String(s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "x";
+}
+
 function subjectIcon(subject) {
   const s = (subject || "").toLowerCase();
   if (s.includes("bio")) return "🧬";
@@ -141,6 +156,8 @@ const StudentQuiz = {
   roomsUnsub: null,
   suspiciousCount: 0,
   attendedScores: [],
+  myScoresForClass: [],
+  attemptDocId: null,
 
   els: {},
 
@@ -206,9 +223,16 @@ const StudentQuiz = {
     });
 
     this.els.availableList.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-room-id]");
-      if (!btn) return;
-      this.beginTest(btn.dataset.roomId);
+      const startBtn = e.target.closest("button[data-room-id]");
+      if (startBtn) {
+        this.beginTest(startBtn.dataset.roomId);
+        return;
+      }
+      const viewBtn = e.target.closest("button[data-view-score-room]");
+      if (viewBtn) {
+        const record = this.myScoresForClass.find((s) => s.roomId === viewBtn.dataset.viewScoreRoom);
+        if (record) this.showPastAttemptRecord(record);
+      }
     });
 
     // Covers a page reload with an already-saved session. A *fresh* login
@@ -311,7 +335,8 @@ const StudentQuiz = {
     const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
     const room = this.activeRoom || {};
     try {
-      await db.collection("scores").add({
+      const docRef = this.attemptDocId ? db.collection("scores").doc(this.attemptDocId) : db.collection("scores").doc();
+      await docRef.set({
         username: current.username || "Unknown",
         score,
         total: this.questions.length,
@@ -320,6 +345,7 @@ const StudentQuiz = {
         subject: room.subject || null,
         roomId: room.id || null,
         suspicious: this.suspiciousCount,
+        status: "left_early",
         leftEarly: true,
         answers: this.questions.map((q, i) => ({
           questionText: q.questionText,
@@ -337,6 +363,45 @@ const StudentQuiz = {
     // shouldn't have to type their name/grade/section in again right
     // after just being warned their score was being saved.
     this.showHome();
+  },
+
+  // Best-effort record of "how far they got" — written on every answer
+  // change and whenever the tab is hidden mid-test (see
+  // handleVisibilityChange), so a student who just closes the app without
+  // ever clicking Submit or Leave still leaves a score behind instead of
+  // vanishing with no record at all. submitTest()/confirmLeaveTest()
+  // overwrite this same doc with a final status, so a student who does
+  // finish properly never ends up with a duplicate "in progress" row.
+  async autosaveProgress() {
+    if (!this.attemptDocId || !this.activeRoom) return;
+    let score = 0;
+    this.questions.forEach((q, i) => {
+      if (this.answers[i] === q.correctAnswer) score += 1;
+    });
+
+    const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    const room = this.activeRoom;
+    try {
+      await db.collection("scores").doc(this.attemptDocId).set({
+        username: current.username || "Unknown",
+        score,
+        total: this.questions.length,
+        grade: room.grade || current.grade || null,
+        section: room.section || current.section || null,
+        subject: room.subject || null,
+        roomId: room.id || null,
+        suspicious: this.suspiciousCount,
+        status: "in_progress",
+        answers: this.questions.map((q, i) => ({
+          questionText: q.questionText,
+          correctAnswer: q.correctAnswer,
+          yourAnswer: this.answers[i] || "Not answered",
+        })),
+        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      console.warn("Could not autosave progress:", err);
+    }
   },
 
   requestFullscreenSafe() {
@@ -359,6 +424,12 @@ const StudentQuiz = {
   handleVisibilityChange() {
     if (this.inTestMode() && document.hidden) {
       this.suspiciousCount += 1;
+      // Covers a student closing the tab/app or switching away entirely
+      // without ever clicking "Leave" — whatever they've answered so far
+      // gets saved right now, so it isn't just silently lost. If they
+      // come back and keep going, later autosaves/the real submit just
+      // overwrite this same record.
+      this.autosaveProgress();
     }
   },
 
@@ -367,6 +438,28 @@ const StudentQuiz = {
       this.els.noTestCard.classList.add("hidden");
       this.els.availableList.innerHTML = this.liveRooms.map((r) => {
         const n = r.questions.length;
+        // A finished attempt only counts against THIS room instance: if
+        // the teacher reset and re-sent the same subject, r.sentAt moves
+        // forward, so an older completed/left-early score (from before
+        // that resend) no longer hides "Start Test" for the new one.
+        const roomSentMs = toMillis(r.sentAt);
+        const finished = this.myScoresForClass.find((s) =>
+          s.roomId === r.id &&
+          (s.status === "completed" || s.status === "left_early" || s.leftEarly) &&
+          toMillis(s.ts) >= roomSentMs
+        );
+        if (finished) {
+          return `
+            <div class="card available-card completed">
+              <div class="subject-icon">${subjectIcon(r.subject)}</div>
+              <h2>${escapeHtml(r.subject)}</h2>
+              <p>✅ Completed — you scored ${finished.score}/${finished.total}.</p>
+              <div class="btn-row" style="justify-content:center">
+                <button class="btn secondary" data-view-score-room="${r.id}">View result</button>
+              </div>
+            </div>
+          `;
+        }
         return `
           <div class="card available-card">
             <div class="subject-icon">${subjectIcon(r.subject)}</div>
@@ -402,7 +495,14 @@ const StudentQuiz = {
           String(r.grade) === String(current.grade) &&
           String(r.section || "").toLowerCase() === String(current.section || "").toLowerCase()
         );
+        // Unsliced, used to check whether the CURRENT live room has
+        // already been completed (see showAvailable) — the visible
+        // "Test attended" list below only needs the 10 most recent.
+        this.myScoresForClass = mine;
         this.attendedScores = mine.slice(0, 10);
+        // The completed-room check above only has fresh data now that
+        // scores have loaded, so re-render the available list with it.
+        this.showAvailable();
         if (!this.attendedScores.length) {
           area.innerHTML = '<p class="muted">You haven\'t attended any tests yet.</p>';
           return;
@@ -425,12 +525,17 @@ const StudentQuiz = {
   showPastAttempt(index) {
     const record = this.attendedScores[index];
     if (!record) return;
+    this.showPastAttemptRecord(record);
+  },
+
+  showPastAttemptRecord(record) {
     this.els.studentHome.classList.add("hidden");
     this.els.pastAttemptCard.classList.remove("hidden");
 
     const date = record.ts && record.ts.toDate ? record.ts.toDate().toLocaleString() : "Just now";
     const subjectBit = record.subject ? ` • ${escapeHtml(record.subject)}` : "";
-    this.els.pastAttemptText.innerHTML = `You scored <strong>${record.score} out of ${record.total}</strong> — ${escapeHtml(date)}${subjectBit}`;
+    const statusBit = record.status === "in_progress" ? " • ⏳ Didn't finish (closed before submitting)" : "";
+    this.els.pastAttemptText.innerHTML = `You scored <strong>${record.score} out of ${record.total}</strong> — ${escapeHtml(date)}${subjectBit}${statusBit}`;
 
     if (Array.isArray(record.answers) && record.answers.length) {
       renderResultBreakdown(this.els.pastAttemptArea, record.answers);
@@ -453,6 +558,12 @@ const StudentQuiz = {
     this.index = 0;
     this.fromReview = false;
     this.state = "answering";
+    // Deterministic per (student, room, this specific send) so every
+    // autosave below overwrites the same doc instead of piling up
+    // duplicates — and so a later resend of the same subject (which
+    // changes sentAt) gets its own fresh doc, keeping history intact.
+    const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
+    this.attemptDocId = `${sanitizeForId(current.username)}_${sanitizeForId(roomId)}_${toMillis(room.sentAt) || "x"}`;
     this.els.studentHome.classList.add("hidden");
     this.els.quizCard.classList.remove("hidden");
     this.els.subjectTag.textContent = room.subject;
@@ -479,6 +590,7 @@ const StudentQuiz = {
       Array.from(this.els.options.querySelectorAll(".option")).forEach((btn) => {
         btn.classList.toggle("selected", btn.dataset.value === opt);
       });
+      this.autosaveProgress();
     });
     this.replayEnterAnimation();
   },
@@ -560,7 +672,11 @@ const StudentQuiz = {
     const current = JSON.parse(localStorage.getItem("tq_user") || "{}");
     const room = this.activeRoom || {};
     try {
-      await db.collection("scores").add({
+      // Same doc id as the autosaves during this attempt (see
+      // autosaveProgress) — a proper submit overwrites the "in progress"
+      // record with a final one instead of leaving a stray duplicate.
+      const docRef = this.attemptDocId ? db.collection("scores").doc(this.attemptDocId) : db.collection("scores").doc();
+      await docRef.set({
         username: current.username || "Unknown",
         score,
         total: this.questions.length,
@@ -569,6 +685,7 @@ const StudentQuiz = {
         subject: room.subject || null,
         roomId: room.id || null,
         suspicious: this.suspiciousCount,
+        status: "completed",
         // Snapshotted here rather than re-read from the room later: the
         // teacher can reset/stop/change the room's questions afterward,
         // so this is the only reliable record of what was actually asked

@@ -446,7 +446,10 @@ const HiddenRoom = {
           const left = r.leftEarly
             ? ` <span class="susp-flag" title="Left before finishing — unanswered questions counted as wrong">🚪 Left early</span>`
             : "";
-          return `<tr><td>${escapeHtml(r.username || "")}</td><td>${r.score}/${r.total}${flag}${left}</td></tr>`;
+          const inProgress = r.status === "in_progress"
+            ? ` <span class="susp-flag" title="Closed the app without submitting or using Leave — this is their score as of the last question they answered">⏳ Didn't finish</span>`
+            : "";
+          return `<tr><td>${escapeHtml(r.username || "")}</td><td>${r.score}/${r.total}${flag}${left}${inProgress}</td></tr>`;
         })
         .join("");
       this.els.scoresTable.innerHTML = `<table class="data"><thead><tr><th>Name</th><th>Score</th></tr></thead><tbody>${html}</tbody></table>`;

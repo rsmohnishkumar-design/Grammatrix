@@ -668,6 +668,17 @@ table.data tr td:last-child{border-radius:0 10px 10px 0}
 }
 .available-card h2{color:var(--gold-text);font-size:1.3rem;margin-bottom:6px}
 .available-card p{color:#e2d3a4;font-size:.88rem;margin-bottom:4px}
+
+/* A test this student has already finished: no urgency, so drop the
+   pulse and calm the border/background down from the "waiting for you"
+   gold treatment. */
+.available-card.completed{
+  animation:none;
+  border-color:var(--line);
+  background:var(--paleSurface);
+}
+.available-card.completed h2{color:var(--navy-text)}
+.available-card.completed p{color:var(--muted)}
 @keyframes availPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,.35)}50%{box-shadow:0 0 0 10px rgba(201,162,39,0)}}
 
 .attended-list{display:grid;gap:10px;margin-top:4px}
