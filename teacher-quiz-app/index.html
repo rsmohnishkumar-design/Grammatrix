@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=35">
+<link rel="stylesheet" href="css/style.css?v=36">
 </head>
 <body>
 
@@ -95,6 +95,7 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle" id="studentSubtitle">Knowledge &amp; Testing Hub</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-student">🙋 <strong id="studentGreeting"></strong></span>
+      <button class="btn secondary small hidden" id="studentEnableNotifBtn" title="Get an alert on this device even when Testify isn't open">🔔 Enable notifications</button>
       <div class="kebab-wrap">
         <button class="btn ghost icon-btn" id="studentBellBtn" data-kebab-btn="studentBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="studentBellBadge"></span></button>
         <div class="kebab-dropdown notif-panel hidden" id="studentBellPanel"></div>
@@ -201,6 +202,7 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Knowledge &amp; Testing Hub</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-teacher">🔒 Hidden Room</span>
+      <button class="btn secondary small hidden" id="teacherEnableNotifBtn" title="Get an alert on this device even when Testify isn't open">🔔 Enable notifications</button>
       <div class="kebab-wrap">
         <button class="btn ghost icon-btn" id="teacherBellBtn" data-kebab-btn="teacherBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="teacherBellBadge"></span></button>
         <div class="kebab-dropdown notif-panel hidden" id="teacherBellPanel"></div>
@@ -343,6 +345,7 @@
     <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Admin Overview</div></div></div>
     <div class="navbar-right">
       <span class="chip chip-teacher">🛡️ Admin</span>
+      <button class="btn secondary small hidden" id="adminEnableNotifBtn" title="Get an alert on this device even when Testify isn't open">🔔 Enable notifications</button>
       <div class="kebab-wrap">
         <button class="btn ghost icon-btn" id="adminBellBtn" data-kebab-btn="adminBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="adminBellBadge"></span></button>
         <div class="kebab-dropdown notif-panel hidden" id="adminBellPanel"></div>
@@ -398,6 +401,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -405,15 +409,16 @@
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<script src="js/firebase-config.js?v=35"></script>
-<script src="js/questionGenerator.js?v=35"></script>
-<script src="js/ocr.js?v=35"></script>
-<script src="js/quiz.js?v=35"></script>
-<script src="js/hiddenRoom.js?v=35"></script>
-<script src="js/admin.js?v=35"></script>
-<script src="js/issues.js?v=35"></script>
-<script src="js/notifications.js?v=35"></script>
-<script src="js/app.js?v=35"></script>
+<script src="js/firebase-config.js?v=36"></script>
+<script src="js/questionGenerator.js?v=36"></script>
+<script src="js/ocr.js?v=36"></script>
+<script src="js/quiz.js?v=36"></script>
+<script src="js/hiddenRoom.js?v=36"></script>
+<script src="js/admin.js?v=36"></script>
+<script src="js/issues.js?v=36"></script>
+<script src="js/notifications.js?v=36"></script>
+<script src="js/push.js?v=36"></script>
+<script src="js/app.js?v=36"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

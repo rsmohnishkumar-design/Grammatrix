@@ -1,0 +1,13 @@
+{
+  "name": "testify-functions",
+  "description": "Cloud Functions for Testify's push notifications",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^4.9.0"
+  },
+  "private": true
+}

@@ -3,12 +3,13 @@
 // issues.js (each panel is a .kebab-dropdown) — this file only
 // computes what should be listed and paints the badge count.
 //
-// Nothing here is a real OS/push notification (that needs Firebase
-// Cloud Messaging, a service worker push handler, and the student
-// granting permission — well beyond a school-project test app). These
-// are in-app only: a badge + panel that only show up while someone has
-// the page open, derived live from the "rooms" collection every time
-// it changes.
+// This also mirrors the unread count onto the installed app's home
+// screen icon via the Badging API (navigator.setAppBadge) — but that
+// only works while this page's JS is actually running (foreground or
+// a background tab), same as everything else here. Getting the icon
+// bubble to update — or a banner to appear — while the app is fully
+// closed needs a real push (see js/push.js and service-worker.js),
+// since a closed tab runs no JS at all.
 
 const Notifications = {
   els: {},
@@ -132,6 +133,7 @@ const Notifications = {
         badge.classList.add("hidden");
       }
     }
+    this.syncOsBadge(unseen);
 
     const clickable = role === "admin";
     panel.innerHTML = items.length
@@ -143,6 +145,18 @@ const Notifications = {
       : `<p class="muted" style="padding:10px 12px">${emptyText}</p>`;
   },
 
+  // Chrome/Edge (Android, desktop, ChromeOS) show this as a small red
+  // count on the installed app's icon — Safari and Firefox don't support
+  // it and silently no-op here, which is fine, the in-app bell still works.
+  syncOsBadge(unseen) {
+    if (!navigator.setAppBadge || !navigator.clearAppBadge) return;
+    if (unseen > 0) {
+      navigator.setAppBadge(unseen).catch(() => {});
+    } else {
+      navigator.clearAppBadge().catch(() => {});
+    }
+  },
+
   markSeen(role) {
     const user = JSON.parse(localStorage.getItem("tq_user") || "{}");
     const items = this.lastItems[role] || [];
@@ -150,5 +164,6 @@ const Notifications = {
     try { localStorage.setItem(this.seenKey(role, user), signature); } catch (err) { /* ignore */ }
     const badge = role === "student" ? this.els.studentBadge : role === "teacher" ? this.els.teacherBadge : this.els.adminBadge;
     if (badge) badge.classList.add("hidden");
+    this.syncOsBadge(0);
   },
 };

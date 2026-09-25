@@ -46,5 +46,17 @@ service cloud.firestore {
     match /rooms/{roomId} {
       allow read, write: if true;
     }
+
+    // A device's push notification token (js/push.js), doc id = the
+    // token itself so re-registering the same device overwrites its own
+    // entry instead of piling up duplicates. Only the Cloud Function
+    // (Admin SDK, bypasses these rules entirely) ever sends with these —
+    // no client needs to read them back.
+    match /deviceTokens/{token} {
+      allow create: if true;
+      allow read: if false;
+      allow update: if true;
+      allow delete: if true;
+    }
   }
 }

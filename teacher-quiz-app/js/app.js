@@ -84,6 +84,10 @@ function routeTo(user) {
   // are known, instead of waiting for its own 60s tick or the next
   // unrelated Firestore write.
   Notifications.render();
+  // If push was already granted on this device earlier, re-tag its
+  // device token with whoever is logged in now (role/grade/section can
+  // change if a different person uses the same device).
+  Push.refreshIdentity();
 }
 
 function logout() {
@@ -175,6 +179,7 @@ HiddenRoom.init();
 Admin.init();
 IssueReporter.init();
 Notifications.init();
+Push.init();
 
 const existing = JSON.parse(localStorage.getItem("tq_user") || "null");
 if (existing) {
