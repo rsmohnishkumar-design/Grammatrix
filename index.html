@@ -463,7 +463,8 @@ margin-top:14px
 .info-overlay,
 .login-overlay,
 .intro-overlay,
-.profile-overlay{
+.profile-overlay,
+.avatar-overlay{
 position:fixed;
 inset:0;
 background:rgba(10,18,39,.64);
@@ -478,8 +479,23 @@ padding:18px
 .info-overlay.open,
 .login-overlay.open,
 .intro-overlay.open,
-.profile-overlay.open{
+.profile-overlay.open,
+.avatar-overlay.open{
 display:flex
+}
+
+.avatar-modal{
+width:min(420px,92vw);
+padding:16px;
+text-align:center
+}
+
+.avatar-modal img{
+width:100%;
+max-height:70vh;
+object-fit:contain;
+border-radius:20px;
+background:var(--soft)
 }
 
 .modal{
@@ -735,6 +751,10 @@ width:48px;
 height:48px;
 border-radius:50%;
 object-fit:cover
+}
+
+.leader img{
+cursor:pointer
 }
 
 .leader-avatar{
@@ -1581,6 +1601,21 @@ Submit Feedback
 <h2 id="lbPopupTitle"></h2>
 
 <p class="lead" id="lbPopupMsg"></p>
+
+</div>
+
+</div>
+
+
+<!-- LEADERBOARD PROFILE PHOTO LIGHTBOX -->
+
+<div class="avatar-overlay" id="avatarOverlay">
+
+<div class="modal avatar-modal">
+
+<button class="close" id="closeAvatarOverlay">×</button>
+
+<img id="avatarOverlayImg" alt="Profile photo">
 
 </div>
 
@@ -3341,6 +3376,19 @@ $("lbPopupCard").querySelectorAll(".confetti-piece").forEach(e=>e.remove());
 }
 
 $("closeLbPopup").onclick=closeLbPopup;
+
+
+$("leaderboardArea").addEventListener("click",e=>{
+const img=e.target.closest(".leader img");
+if(!img)return;
+$("avatarOverlayImg").src=img.src;
+$("avatarOverlay").classList.add("open");
+});
+
+$("closeAvatarOverlay").onclick=()=>{
+$("avatarOverlay").classList.remove("open");
+$("avatarOverlayImg").src="";
+};
 
 
 function clearQuestionForm(){
