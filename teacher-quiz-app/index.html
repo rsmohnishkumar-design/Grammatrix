@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#14213d">
+<title>Testify — Learn. Test. Improve.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23C9A227'/%3E%3Cpolygon points='50,30 80,45 50,60 20,45' fill='%2314213D'/%3E%3Cpath d='M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z' fill='%2314213D'/%3E%3Cline x1='76' y1='47' x2='76' y2='67' stroke='%2314213D' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='76' cy='71' r='4.5' fill='%2314213D'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Testify">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=35">
+</head>
+<body>
+
+<!-- Decorative, non-interactive preview of the app shown blurred behind
+     the login modal. Purely cosmetic — no ids, never receives input. -->
+<div class="app-backdrop" id="appBackdrop" aria-hidden="true">
+  <div class="backdrop-inner">
+    <header class="app-navbar">
+      <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Knowledge &amp; Testing Hub</div></div></div>
+      <span class="chip chip-teacher">🔒 Hidden Room</span>
+    </header>
+    <div class="live-banner live">🟢 Live now — questions are with your students</div>
+    <div class="card step-card step-1">
+      <h2><span class="step-number">1</span>📸 Upload pages</h2>
+      <p class="muted">Take photos, or upload PDFs or notes, of what you want questions from.</p>
+    </div>
+    <div class="card step-card step-2">
+      <h2><span class="step-number">2</span>📝 Questions</h2>
+      <p class="muted">Review, edit and send questions to your class.</p>
+    </div>
+    <div class="card step-card step-3">
+      <h2><span class="step-number">3</span>🧑‍🎓 Who's logged in &amp; scores</h2>
+      <p class="muted">See every login and score live.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LOGIN ============ -->
+<section class="view" id="loginView">
+  <div class="card login-card">
+    <div class="login-icon-wrap"><div class="login-icon"><svg viewBox="0 0 100 100" width="46" height="46"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div></div>
+    <div class="brand-area">
+      <h1>Testify</h1>
+      <div class="brand-line"><span></span><span>Learn &bull; Test &bull; Improve</span><span></span></div>
+    </div>
+    <p class="login-intro">Enter your name to join a test.<br><span class="muted-line">Teachers, enter your room code instead.</span></p>
+    <form id="loginForm">
+      <div class="input-wrap">
+        <span class="input-icon">👤</span>
+        <input id="usernameInput" placeholder="Your name" autocomplete="off" maxlength="40" required>
+      </div>
+      <div id="studentFieldsWrap" class="student-fields">
+        <div>
+          <label class="field-label" for="gradeSelect">Grade</label>
+          <select id="gradeSelect">
+            <option value="" disabled selected>Select</option>
+            <option value="1">1st Grade</option>
+            <option value="2">2nd Grade</option>
+            <option value="3">3rd Grade</option>
+            <option value="4">4th Grade</option>
+            <option value="5">5th Grade</option>
+            <option value="6">6th Grade</option>
+            <option value="7">7th Grade</option>
+            <option value="8">8th Grade</option>
+            <option value="9">9th Grade</option>
+            <option value="10">10th Grade</option>
+            <option value="11">11th Grade</option>
+            <option value="12">12th Grade</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="sectionInput">Section</label>
+          <input id="sectionInput" placeholder="e.g. A" maxlength="10" autocomplete="off">
+        </div>
+      </div>
+      <button type="submit" class="btn primary login-button">Continue <span>→</span></button>
+    </form>
+    <div id="loginStatus" class="status"></div>
+    <div class="login-note">🔒 Your name is only used to identify your test session.</div>
+  </div>
+  <div class="login-footer">Powered by <strong>Testify</strong> &bull; Interactive Learning</div>
+</section>
+
+<!-- ============ STUDENT VIEW ============ -->
+<section class="view hidden" id="studentView">
+  <header class="app-navbar">
+    <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle" id="studentSubtitle">Knowledge &amp; Testing Hub</div></div></div>
+    <div class="navbar-right">
+      <span class="chip chip-student">🙋 <strong id="studentGreeting"></strong></span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="studentBellBtn" data-kebab-btn="studentBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="studentBellBadge"></span></button>
+        <div class="kebab-dropdown notif-panel hidden" id="studentBellPanel"></div>
+      </div>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="studentKebabBtn" data-kebab-btn="studentKebabDropdown" aria-label="More options">⋮</button>
+        <div class="kebab-dropdown hidden" id="studentKebabDropdown">
+          <button class="kebab-item" data-report-issue-btn>🐞 Report an issue</button>
+        </div>
+      </div>
+      <button class="btn ghost" id="studentLogout">Log out</button>
+    </div>
+  </header>
+
+  <!-- Best-effort test-mode deterrents, shown only while answering/reviewing
+       a test (see StudentQuiz.enterTestMode/exitTestMode in quiz.js). This
+       cannot block OS-level screenshots or screen recording — no website
+       can — it locks fullscreen and discourages copy/right-click. -->
+  <div class="hidden" id="testModeUI">
+    <div class="test-mode-banner" id="testModeBanner">🔒 Test mode — please stay in fullscreen. Leaving the test is recorded.</div>
+    <div class="fullscreen-nudge hidden" id="fullscreenNudge">
+      <div class="fullscreen-nudge-card">
+        <p>You exited fullscreen.</p>
+        <button class="btn primary" id="resumeFullscreenBtn">Return to fullscreen</button>
+      </div>
+    </div>
+
+    <!-- Shown when the student clicks "Leave" mid-test, instead of
+         letting them just walk away silently. -->
+    <div class="fullscreen-nudge hidden" id="leaveConfirmModal">
+      <div class="fullscreen-nudge-card">
+        <p class="leave-warning">⚠️ Leaving now will save your current score to your teacher — any question you haven't answered yet will be marked wrong.</p>
+        <div class="btn-row" style="justify-content:center;margin-top:0">
+          <button class="btn ghost" id="leaveCancelBtn">Stay &amp; continue</button>
+          <button class="btn danger" id="leaveConfirmBtn">Leave &amp; submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-container">
+    <!-- Home: shown whenever the student isn't actively taking or reviewing a test -->
+    <div id="studentHome">
+      <div id="availableList" class="subjects-grid"></div>
+
+      <div class="card hidden" id="noTestCard">
+        <p>⏳ No test available right now.</p>
+      </div>
+
+      <div class="card">
+        <h2>📋 Test attended</h2>
+        <div id="attendedList" class="attended-list">
+          <p class="muted">You haven't attended any tests yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test-taking -->
+    <div class="card hidden" id="studentQuizCard">
+      <div class="progress-row">
+        <span id="qProgress"></span>
+        <span id="qSubjectTag" class="subject-tag"></span>
+      </div>
+      <p class="question-text" id="qText"></p>
+      <div class="options" id="qOptions"></div>
+      <div class="btn-row">
+        <button class="btn ghost hidden" id="qPrevBtn">← Back</button>
+        <button class="btn primary" id="qNextBtn">Next</button>
+      </div>
+    </div>
+
+    <!-- Review before submitting -->
+    <div class="card hidden" id="studentReviewCard">
+      <h2>📝 Review your answers</h2>
+      <p class="muted">Check everything below — you can still change any answer before you submit.</p>
+      <div id="reviewArea"></div>
+      <div class="btn-row">
+        <button class="btn primary" id="submitTestBtn">✅ Submit Test</button>
+      </div>
+      <div id="submitStatus" class="status"></div>
+    </div>
+
+    <!-- Results after submitting -->
+    <div class="card hidden" id="studentResultCard">
+      <h2>✅ Test submitted!</h2>
+      <p id="resultText"></p>
+      <div id="resultsArea"></div>
+      <button class="btn secondary" id="checkedBtn">Checked</button>
+    </div>
+
+    <!-- Reviewing a past attempt from "Test attended" -->
+    <div class="card hidden" id="pastAttemptCard">
+      <h2>📄 Past attempt</h2>
+      <p id="pastAttemptText"></p>
+      <div id="pastAttemptArea"></div>
+      <button class="btn secondary" id="pastAttemptBackBtn">← Back</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HIDDEN ROOM (TEACHER) ============ -->
+<section class="view hidden" id="hiddenRoomView">
+  <header class="app-navbar">
+    <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Knowledge &amp; Testing Hub</div></div></div>
+    <div class="navbar-right">
+      <span class="chip chip-teacher">🔒 Hidden Room</span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="teacherBellBtn" data-kebab-btn="teacherBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="teacherBellBadge"></span></button>
+        <div class="kebab-dropdown notif-panel hidden" id="teacherBellPanel"></div>
+      </div>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="teacherKebabBtn" data-kebab-btn="teacherKebabDropdown" aria-label="More options">⋮</button>
+        <div class="kebab-dropdown hidden" id="teacherKebabDropdown">
+          <button class="kebab-item" data-report-issue-btn>🐞 Report an issue</button>
+        </div>
+      </div>
+      <button class="btn ghost" id="teacherLogout">Log out</button>
+    </div>
+  </header>
+
+  <div class="page-container-wide">
+    <div class="teacher-shell">
+      <aside class="grade-sidebar">
+        <div class="sidebar-head">
+          <div class="sidebar-avatar">🔒</div>
+          <div class="sidebar-title">Hidden Room</div>
+          <div class="sidebar-sub">Pick a grade to open its room</div>
+        </div>
+        <div class="sidebar-section-label">Grades</div>
+        <nav class="grade-menu" id="gradeMenu"></nav>
+        <div class="sidebar-stats" id="sidebarStats">
+          <strong>—</strong>
+          logins recently
+        </div>
+      </aside>
+
+      <main class="teacher-main">
+        <div class="card room-empty-card" id="roomEmptyCard">
+          <p class="muted">👈 Select a grade from the menu to open its room.</p>
+        </div>
+
+        <div id="roomPanel" class="hidden">
+          <div class="card room-setup-card">
+            <h2>🏷️ Room details</h2>
+            <p class="muted">Set the section(s) and subject for this grade's room — separate multiple sections with commas (e.g. "A, B, C") to send the same worksheet to all of them at once. Students only see a room once both are filled in.</p>
+            <div class="room-setup-row">
+              <div><label class="field-label" for="roomGradeDisplay">Grade</label><input id="roomGradeDisplay" disabled></div>
+              <div><label class="field-label" for="roomSectionInput">Section(s)</label><input id="roomSectionInput" placeholder="e.g. A or A, B, C" maxlength="60"></div>
+              <div><label class="field-label" for="roomSubjectInput">Subject</label><input id="roomSubjectInput" placeholder="e.g. Biology" maxlength="40"></div>
+            </div>
+            <div class="room-setup-row">
+              <div>
+                <label class="field-label" for="roomDueInput">Due date (optional)</label>
+                <input type="datetime-local" id="roomDueInput">
+              </div>
+              <div style="display:flex;align-items:flex-end">
+                <button type="button" class="btn secondary" id="updateDueBtn" style="width:100%">🗓️ Update due date</button>
+              </div>
+            </div>
+            <div id="roomStatus" class="status"></div>
+          </div>
+
+          <div id="roomContent" class="hidden">
+            <div class="live-banner" id="liveStatusBanner">⚪ No live test right now</div>
+
+            <div class="teacher-grid">
+              <div class="card step-card step-1">
+                <h2><span class="step-number">1</span>📸 Upload pages</h2>
+                <p class="muted">Take photos, or upload PDFs or text/Markdown notes, of what you want questions from.</p>
+                <input type="file" id="photoInput" accept="image/*,application/pdf,text/plain,text/markdown,.md,.markdown,.txt" capture="environment" multiple>
+
+                <label class="field-label" for="questionCountInput">How many questions to generate? (max 50)</label>
+                <input type="number" id="questionCountInput" min="1" max="50" value="8">
+
+                <div class="btn-row">
+                  <button class="btn primary" id="generateBtn">✨ Extract text &amp; generate questions</button>
+                </div>
+                <div id="ocrStatus" class="status"></div>
+              </div>
+
+              <div class="card step-card step-2" id="questionsCard">
+                <h2><span class="step-number">2</span>📝 Questions</h2>
+                <div class="btn-row" id="viewModeToggle">
+                  <button class="btn secondary active" id="modeListBtn">📋 Just questions</button>
+                  <button class="btn secondary" id="modeInteractiveBtn">🎮 Interactive preview</button>
+                </div>
+                <div id="questionsArea"><p class="muted">No questions yet — generate some from photos above, or add one below.</p></div>
+
+                <button class="btn secondary" id="addManualBtn">➕ Add a question manually</button>
+                <div class="manual-form hidden" id="manualForm">
+                  <label class="field-label">Question</label>
+                  <input id="manualQuestion" placeholder="e.g. What force keeps planets in orbit?">
+                  <label class="field-label">Correct answer</label>
+                  <input id="manualCorrect" placeholder="e.g. Gravity">
+                  <label class="field-label">Wrong option</label>
+                  <input id="manualWrong1" placeholder="e.g. Magnetism">
+                  <label class="field-label">Wrong option</label>
+                  <input id="manualWrong2" placeholder="e.g. Friction">
+                  <label class="field-label">Wrong option</label>
+                  <input id="manualWrong3" placeholder="e.g. Momentum">
+                  <div class="btn-row">
+                    <button class="btn primary" id="manualAddBtn">Add question</button>
+                    <button class="btn ghost" id="manualCancelBtn">Cancel</button>
+                  </div>
+                  <div id="manualStatus" class="status"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card step-card step-3">
+              <h2><span class="step-number">3</span>🧑‍🎓 Who's logged in &amp; scores</h2>
+              <div class="two-col">
+                <div>
+                  <h3>🧑‍🎓 Logins</h3>
+                  <div id="loginsTable" class="mini-table">Loading…</div>
+                </div>
+                <div>
+                  <h3>🏆 Scores</h3>
+                  <div id="scoresTable" class="mini-table">No scores yet.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fixed so Send/Stop/Reset stay reachable without scrolling
+                 back up past a long, growing question list. -->
+            <div class="teacher-action-bar">
+              <div class="teacher-action-bar-inner">
+                <div class="btn-row" style="margin-top:0">
+                  <button class="btn primary" id="sendBtn">🚀 Send to children</button>
+                  <button class="btn danger" id="clearLiveBtn">❌ Stop live test</button>
+                  <button class="btn warning" id="resetQuestionsBtn">🔄 Reset questions</button>
+                </div>
+                <div id="sendStatus" class="status"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="view hidden" id="adminView">
+  <header class="app-navbar">
+    <div class="navbar-brand"><div class="navbar-logo"><svg viewBox="0 0 100 100" width="22" height="22"><polygon points="50,30 80,45 50,60 20,45" fill="#14213D"/><path d="M33 49 L33 61 Q50 70 67 61 L67 49 L50 58 Z" fill="#14213D"/><line x1="76" y1="47" x2="76" y2="67" stroke="#14213D" stroke-width="4" stroke-linecap="round"/><circle cx="76" cy="71" r="5" fill="#14213D"/></svg></div><div><div class="navbar-title">TESTIFY</div><div class="navbar-subtitle">Admin Overview</div></div></div>
+    <div class="navbar-right">
+      <span class="chip chip-teacher">🛡️ Admin</span>
+      <div class="kebab-wrap">
+        <button class="btn ghost icon-btn" id="adminBellBtn" data-kebab-btn="adminBellPanel" aria-label="Notifications">🔔<span class="bell-badge hidden" id="adminBellBadge"></span></button>
+        <div class="kebab-dropdown notif-panel hidden" id="adminBellPanel"></div>
+      </div>
+      <button class="btn ghost" id="adminLogout">Log out</button>
+    </div>
+  </header>
+
+  <div class="page-container-wide">
+    <div class="card">
+      <h2>🐞 Reported issues</h2>
+      <p class="muted">Sent from the ⋮ menu in the student and teacher views. Delete one once it's handled.</p>
+      <div id="adminIssuesList" class="admin-list">Loading…</div>
+    </div>
+
+    <div class="card">
+      <h2>🏷️ Every room</h2>
+      <p class="muted">Every grade/section/subject room any teacher has opened, across the whole app. Click a room to edit its worksheet directly, or delete it to stop that test for students right away.</p>
+      <div id="adminRoomsList" class="admin-list">Loading…</div>
+    </div>
+
+    <div class="admin-two-col">
+      <div class="card">
+        <h2>🧑‍🎓 All logins</h2>
+        <p class="muted">Most recent 200, newest first.</p>
+        <div id="adminLoginsList" class="admin-list">Loading…</div>
+      </div>
+      <div class="card">
+        <h2>🏆 All scores</h2>
+        <p class="muted">Most recent 200, newest first. Deleting one removes it from that student's "Test attended" list too.</p>
+        <div id="adminScoresList" class="admin-list">Loading…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Shared across the student, teacher and admin views — opened from
+     each one's ⋮ menu. Reports land in the "Reported issues" card in
+     the admin room (login code 2708). -->
+<div class="fullscreen-nudge hidden" id="reportIssueModal">
+  <div class="fullscreen-nudge-card">
+    <h2 style="margin-bottom:10px;text-align:left">🐞 Report an issue</h2>
+    <p class="muted" style="text-align:left;margin-bottom:12px">Tell us what went wrong — this goes straight to the admin.</p>
+    <textarea id="reportIssueText" rows="4" placeholder="What happened?"></textarea>
+    <div id="reportIssueStatus" class="status"></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn ghost" id="reportIssueCancelBtn">Cancel</button>
+      <button class="btn primary" id="reportIssueSubmitBtn">Submit</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
+
+<script src="js/firebase-config.js?v=35"></script>
+<script src="js/questionGenerator.js?v=35"></script>
+<script src="js/ocr.js?v=35"></script>
+<script src="js/quiz.js?v=35"></script>
+<script src="js/hiddenRoom.js?v=35"></script>
+<script src="js/admin.js?v=35"></script>
+<script src="js/issues.js?v=35"></script>
+<script src="js/notifications.js?v=35"></script>
+<script src="js/app.js?v=35"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch((err) => {
+        console.warn("Service worker registration failed:", err);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
